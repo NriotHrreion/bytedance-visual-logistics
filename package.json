@@ -1,0 +1,22 @@
+{
+  "name": "bytedance-visual-logistics",
+  "private": true,
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "dev": "npx concurrently \"pnpm frontend:dev\" \"pnpm backend:dev\"",
+    "start": "npx concurrently \"pnpm frontend:start\" \"pnpm backend:start\"",
+    "frontend:dev": "pnpm --filter frontend dev",
+    "frontend:start": "pnpm --filter frontend start",
+    "backend:dev": "pnpm --filter backend watch",
+    "backend:start": "pnpm --filter backend start",
+    "preinstall": "npx only-allow pnpm"
+  },
+  "keywords": [],
+  "author": "NriotHrreion",
+  "packageManager": "pnpm@10.22.0",
+  "devDependencies": {
+    "eslint": "^9.39.1",
+    "eslint-plugin-import": "^2.32.0"
+  }
+}
