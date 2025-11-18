@@ -1,5 +1,7 @@
 import React from "react";
 import "./global.css";
+import { notoSansSC } from "@/fonts";
+import { cn } from "@/lib/utils";
 
 export default function RootLayout({
   children,
@@ -8,7 +10,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="zh-cn">
-      <body>{children}</body>
+      <body className={cn(notoSansSC.className, "antialiased")}>
+        {children}
+      </body>
     </html>
   );
 }

@@ -1,0 +1,56 @@
+"use client";
+
+import type { Order } from "types";
+import { useState } from "react";
+import { Package, X } from "lucide-react";
+import { mockOrderList } from "types/mocks";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput
+} from "@/components/ui/input-group";
+import { OrderItem } from "./order-item";
+import { searchStringCompare } from "@/lib/utils";
+
+export default function ClientPage() {
+  const [orderList, setOrderList] = useState<Order[]>(mockOrderList);
+  const [searchValue, setSearchValue] = useState("");
+
+  return (
+    <div className="flex flex-col gap-4">
+      <header className="pt-10 space-y-8">
+        <h2 className="text-3xl font-semibold">订单列表</h2>
+        <InputGroup>
+          <InputGroupAddon>
+            <Package />
+          </InputGroupAddon>
+          <InputGroupInput
+            value={searchValue}
+            placeholder="请输入订单号..."
+            autoFocus
+            onChange={(e) => setSearchValue(e.target.value)}/>
+          <InputGroupAddon align="inline-end">
+            <InputGroupButton
+              size="icon-sm"
+              className={searchValue === "" ? "hidden" : ""}
+              onClick={() => setSearchValue("")}>
+              <X />
+            </InputGroupButton>
+          </InputGroupAddon>
+        </InputGroup>
+      </header>
+      <div className="flex flex-col gap-3">
+        {
+          orderList
+            .filter(({ id, name }) => (
+              searchValue !== ""
+              ? (id.includes(searchValue) || searchStringCompare(name, searchValue))
+              : true
+            ))
+            .map((order) => <OrderItem {...order} key={order.id}/>)
+        }
+      </div>
+    </div>
+  );
+}
