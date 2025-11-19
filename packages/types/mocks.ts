@@ -6,24 +6,43 @@ export const mockOrderList: Order[] = [
     name: "iPhone 17 Pro Max 2TB",
     createdAt: new Date(2025, 11, 18),
     status: "pending",
-    routes: []
+    routes: [],
+    destination: [120.72816841, 30.75408188]
   },
   {
     id: "rAdC12",
     name: "iPhone 17 1TB",
-    createdAt: new Date(2025, 11, 18),
+    createdAt: new Date(2025, 11, 17),
+    sentAt: new Date(2025, 11, 18),
     status: "delivering",
     routes: [
-      [118.78221974, 32.07915573]
-    ]
+      {
+        time: new Date(2025, 11, 17),
+        location: [118.78221974, 32.07915573]
+      }
+    ],
+    destination: [120.72816841, 30.75408188]
   },
   {
     id: "RktE73",
     name: "iPhone 16 Pro Max 1TB",
-    createdAt: new Date(2025, 11, 18),
+    createdAt: new Date(2025, 11, 17),
+    sentAt: new Date(2025, 11, 18),
     status: "delivered",
     routes: [
-      [120.08487785, 30.30987378]
-    ]
+      {
+        time: new Date(2025, 11, 17),
+        location: [121.42653336, 29.86982248]
+      },
+      {
+        time: new Date(2025, 11, 17, 12),
+        location: [120.08487785, 30.30987378]
+      },
+      {
+        time: new Date(2025, 11, 18),
+        location: [120.72816841, 30.75408188]
+      },
+    ],
+    destination: [120.72816841, 30.75408188]
   },
 ];

@@ -16,6 +16,7 @@ export default function AMapContainer({
   zoom?: number
 }) {
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const mapRef = useRef<AMap.Map | null>(null);
 
   useEffect(() => {
     if(!containerRef.current) return;
@@ -24,21 +25,19 @@ export default function AMapContainer({
       serviceHost: `${window.location.origin}/_AMapService`
     };
 
-    let map: AMap.Map;
-
     AMapLoader.load({
       key: amapAPIKey,
       version: "2.0",
       plugins: ["AMap.Scale"]
     }).then((AMap) => {
-      map = new AMap.Map(containerRef.current, {
+      mapRef.current = new AMap.Map(containerRef.current, {
         viewMode: "3D",
         zoom,
         center: location
       });
     }).catch((e) => console.log(e));
 
-    return () => map.destroy();
+    return () => mapRef.current.destroy();
   }, [location, zoom]);
 
   return <div ref={containerRef} style={{ width, height }}/>;

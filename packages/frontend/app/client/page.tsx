@@ -1,7 +1,7 @@
 "use client";
 
 import type { Order } from "types";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Package, X } from "lucide-react";
 import { mockOrderList } from "types/mocks";
 import {
@@ -10,12 +10,16 @@ import {
   InputGroupButton,
   InputGroupInput
 } from "@/components/ui/input-group";
-import { OrderItem } from "./order-item";
+import { OrderItem } from "@/components/order-item";
 import { searchStringCompare } from "@/lib/utils";
 
 export default function ClientPage() {
-  const [orderList, setOrderList] = useState<Order[]>(mockOrderList);
+  const [orderList, setOrderList] = useState<Order[]>([]);
   const [searchValue, setSearchValue] = useState("");
+
+  useEffect(() => {
+    setTimeout(() => setOrderList(mockOrderList), 50);
+  }, []);
 
   return (
     <div className="flex flex-col gap-4">

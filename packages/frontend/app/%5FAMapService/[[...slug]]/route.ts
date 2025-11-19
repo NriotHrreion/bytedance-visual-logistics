@@ -1,5 +1,5 @@
 import https from "https";
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { amapRestAPIBase, amapWebAPIBase } from "@/lib/global";
 
 async function proxyRequest(req: NextRequest, method: string) {
@@ -16,7 +16,10 @@ async function proxyRequest(req: NextRequest, method: string) {
     body: method !== "GET" && method !== "HEAD" ? await req.text() : undefined,
   });
 
-  return res;
+  return new NextResponse(await res.text(), {
+    status: res.status,
+    headers: Object.fromEntries(req.headers.entries())
+  });
 }
 
 export async function GET(req: NextRequest) {

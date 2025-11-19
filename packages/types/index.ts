@@ -6,6 +6,11 @@ export interface Order {
   id: string
   name: string
   createdAt: Date
+  sentAt?: Date
   status: DeliveryStatus
-  routes: GeoLocation[]
+  routes: {
+    time: Date
+    location: GeoLocation
+  }[]
+  destination: GeoLocation
 }
