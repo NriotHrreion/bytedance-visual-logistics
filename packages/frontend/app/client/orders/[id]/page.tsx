@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import { mockOrderList } from "types/mocks";
 import dynamic from "next/dynamic";
 import { useParams } from "next/navigation";
+import { PackageCheck, TruckElectric } from "lucide-react";
 import {
   Timeline,
   TimelineItem,
@@ -14,6 +15,7 @@ import {
 } from "@/components/ui/timeline";
 import { GeoLocationLabel } from "@/components/geolocation-label";
 import { OrderItem } from "@/components/order-item";
+import { Hint, HintContent } from "@/components/ui/hint";
 
 const AMapContainer = dynamic(() => import("@/components/amap-container"), { ssr: false });
 
@@ -77,6 +79,22 @@ export default function OrderPage() {
           })}
         </Timeline>
         <OrderItem {...order} inOrderPage/>
+        <Hint
+          variant={order.status === "delivered" ? "success" : "default"}
+          className="mt-2">
+          {
+            order.status === "delivered"
+            ? <PackageCheck size={17}/>
+            : <TruckElectric size={17}/>
+          }
+          <HintContent>
+            {
+              order.status === "delivered"
+              ? "已送达 - 取件码 000-000-000"
+              : "预计明天送达"
+            }
+          </HintContent>
+        </Hint>
       </div>
     </div>
   );
