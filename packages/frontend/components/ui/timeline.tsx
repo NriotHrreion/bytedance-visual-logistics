@@ -29,8 +29,6 @@ export function TimelineItem({
   active?: boolean
   success?: boolean
 }) {
-  const color = success ? "green-600" : "amber-600";
-
   return (
     <div
       data-slot="timeline-item"

@@ -11,6 +11,13 @@ const eslintConfig = defineConfig([
   ]),
   {
     rules: {
+      "@typescript-eslint/no-explicit-any": "off",
+      "@typescript-eslint/no-unused-expressions": "off",
+      "@typescript-eslint/no-unused-vars": ["error", {
+        "args": "none",
+        "caughtErrors": "none"
+      }],
+      "@typescript-eslint/consistent-type-imports": "warn",
       "@next/next/no-img-element": "off",
       "import/order": ["warn", {
         groups: [

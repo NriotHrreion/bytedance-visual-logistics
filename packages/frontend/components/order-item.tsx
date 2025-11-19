@@ -1,12 +1,9 @@
 import type { DeliveryStatus, Order } from "types";
 import Link from "next/link";
 import { format } from "date-fns";
-import useSWR from "swr";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { getLocationName } from "@/lib/amap-api";
-import { Spinner } from "@/components/ui/spinner";
 import { Button } from "@/components/ui/button";
 import { GeoLocationLabel } from "@/components/geolocation-label";
 
@@ -34,20 +31,20 @@ export function OrderItem({
   return (
     <Card className="p-3 gap-2">
       <div className="h-20 flex gap-6">
-        <div className="flex-1 flex flex-col justify-between">
+        <div className="flex-1 min-w-0 flex flex-col justify-between">
           <Link
             href={`/client/orders/${id}`}
-            className="font-semibold hover:underline decoration-2">
+            className="font-semibold hover:underline decoration-2 whitespace-nowrap text-ellipsis overflow-hidden">
             {name}
           </Link>
-          {routes.length > 0 && <GeoLocationLabel className="text-sm" location={latestRoute.location}/>}
+          {routes.length > 0 && <GeoLocationLabel className="text-sm whitespace-nowrap" location={latestRoute.location}/>}
           <span
             className="text-sm text-muted-foreground"
             title={createdAt.toTimeString()}>
             {format(createdAt, "yyyy-MM-dd HH:mm")}
           </span>
         </div>
-        <div className="w-28 flex flex-col justify-between items-end">
+        <div className="w-fit flex flex-col justify-between items-end">
           <span className="text-sm text-muted-foreground">{id}</span>
           <Badge variant="outline">
             {status !== "pending" && (
@@ -57,23 +54,23 @@ export function OrderItem({
           </Badge>
         </div>
       </div>
-      <div className="border-t pt-2 flex justify-between items-center">
-        <span className="text-sm font-semibold">
+      <div className="border-t pt-2 flex justify-between items-center whitespace-nowrap">
+        <span className="text-xs">
           送至&nbsp;
           <GeoLocationLabel location={destination}/>
         </span>
-        <div className="space-x-2">
+        <div className="space-x-2 flex-nowrap">
           {!inOrderPage && (
             <Button
               variant="outline"
-              size="sm"
+              size="xs"
               asChild>
               <Link href={`/client/orders/${id}`}>
                 查看物流
               </Link>
             </Button>
           )}
-          <Button size="sm">
+          <Button size="xs">
             确认收货
           </Button>
         </div>

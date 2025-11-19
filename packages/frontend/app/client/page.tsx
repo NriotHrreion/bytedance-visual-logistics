@@ -22,9 +22,9 @@ export default function ClientPage() {
   }, []);
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="px-8 max-sm:px-4 flex flex-col gap-4">
       <header className="pt-10 space-y-8">
-        <h2 className="text-3xl font-semibold">订单列表</h2>
+        <h2 className="text-3xl font-semibold">我的订单</h2>
         <InputGroup>
           <InputGroupAddon>
             <Package />
@@ -33,7 +33,8 @@ export default function ClientPage() {
             value={searchValue}
             placeholder="请输入订单号..."
             autoFocus
-            onChange={(e) => setSearchValue(e.target.value)}/>
+            onChange={(e) => setSearchValue(e.target.value)}
+            suppressHydrationWarning/>
           <InputGroupAddon align="inline-end">
             <InputGroupButton
               size="icon-sm"
