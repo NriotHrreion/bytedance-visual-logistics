@@ -51,7 +51,7 @@ export function OrderItem({
           {status === "delivered" && (
             <Badge variant="outline">
               <div className="w-2 h-2 rounded-full bg-green-600"/>
-              已到货
+              待取件
             </Badge>
           )}
           {status === "received" && (
@@ -96,7 +96,7 @@ export function OrderItem({
               </Link>
             </Button>
           )}
-          {(status !== "received" && status !== "cancelled") && (
+          {(status !== "pending" && status !== "received" && status !== "cancelled") && (
             <Button size="xs">
               确认收货
             </Button>

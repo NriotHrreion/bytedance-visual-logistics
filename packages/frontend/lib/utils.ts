@@ -23,3 +23,7 @@ export function searchStringCompare(str: string, search: string): boolean {
   }
   return true;
 }
+
+export async function copyToClipboard(text: string): Promise<void> {
+  await window.navigator.clipboard.writeText(text);
+}

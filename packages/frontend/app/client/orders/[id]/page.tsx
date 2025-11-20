@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { mockOrderList } from "types/mocks";
 import dynamic from "next/dynamic";
 import { useParams } from "next/navigation";
@@ -14,12 +14,24 @@ import {
 } from "@/components/ui/timeline";
 import { GeoLocationLabel } from "@/components/geolocation-label";
 import { OrderItem } from "@/components/order-item";
+import { copyToClipboard } from "@/lib/utils";
 
 const AMapContainer = dynamic(() => import("@/components/amap-container"), { ssr: false });
 
 export default function OrderPage() {
   const { id } = useParams<{ id: string }>();
   const order = useMemo(() => mockOrderList.find(({ id: _id }) => id === _id), [id]);
+  const [codeCopied, setCodeCopied] = useState(false);
+
+  const handleCopyClaimCode = async () => {
+    try {
+      await copyToClipboard("000-000-000");
+      setCodeCopied(true);
+    } catch (e) {
+      console.error(e);
+      setCodeCopied(false);
+    }
+  };
   
   if(!order) {
     return (
@@ -67,7 +79,7 @@ export default function OrderPage() {
                         return "已发货";
                       }
                       if(isLast && isDelivered) {
-                        return "已到货";
+                        return "待取件";
                       }
                       if(isLast && isReceived) {
                         return "已签收";
@@ -82,6 +94,19 @@ export default function OrderPage() {
                 </TimelineItemHeader>
                 <TimelineItemContent>
                   <GeoLocationLabel location={location}/>
+                  {(isLast && isDelivered) && (
+                    <div className="mt-1 px-3 py-2 border bg-muted rounded-md flex flex-col gap-1">
+                      <span className="text-2xl text-foreground font-semibold">000-000-000</span>
+                      <div className="flex justify-between">
+                        <span className="text-sm">快递驿站 取件码</span>
+                        <button
+                          className="text-sm cursor-pointer"
+                          onClick={() => handleCopyClaimCode()}>
+                          {codeCopied ? "复制成功" : "复制"}
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </TimelineItemContent>
               </TimelineItem>
             );
