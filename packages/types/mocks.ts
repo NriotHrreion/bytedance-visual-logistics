@@ -4,6 +4,7 @@ export const mockOrderList: Order[] = [
   {
     id: "eBdC32",
     name: "iPhone 17 Pro Max 2TB",
+    price: 17999,
     createdAt: new Date(2025, 11, 18),
     status: "pending",
     routes: [],
@@ -11,7 +12,8 @@ export const mockOrderList: Order[] = [
   },
   {
     id: "rAdC12",
-    name: "iPhone 17 1TB",
+    name: "iPhone 17 512GB",
+    price: 7999.3,
     createdAt: new Date(2025, 11, 17),
     sentAt: new Date(2025, 11, 18),
     status: "delivering",
@@ -26,6 +28,7 @@ export const mockOrderList: Order[] = [
   {
     id: "RktE73",
     name: "iPhone 16 Pro Max 1TB",
+    price: 11177,
     createdAt: new Date(2025, 11, 17),
     sentAt: new Date(2025, 11, 18),
     status: "delivered",
@@ -47,7 +50,8 @@ export const mockOrderList: Order[] = [
   },
   {
     id: "bS2rQ5",
-    name: "iPhone 16 Pro 512GB",
+    name: "iPhone 16 Plus 256GB",
+    price: 6999,
     createdAt: new Date(2025, 11, 17),
     sentAt: new Date(2025, 11, 18),
     status: "received",
@@ -69,7 +73,8 @@ export const mockOrderList: Order[] = [
   },
   {
     id: "e4Tr89",
-    name: "iPhone 16 Pro 512GB",
+    name: "iPhone 16 Plus 256GB",
+    price: 6999,
     createdAt: new Date(2025, 11, 17),
     sentAt: new Date(2025, 11, 18),
     status: "cancelled",

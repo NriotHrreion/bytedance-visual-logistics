@@ -11,6 +11,7 @@ import { Hint, HintContent } from "./ui/hint";
 export function OrderItem({
   id,
   name,
+  price,
   createdAt,
   status,
   routes,
@@ -19,6 +20,7 @@ export function OrderItem({
 }: Order & {
   inOrderPage?: boolean
 }) {
+  const priceStrSplitted = price.toString().split(".");
   const latestRoute = routes.length > 0 ? routes[routes.length - 1] : null;
 
   return (
@@ -38,7 +40,6 @@ export function OrderItem({
           </span>
         </div>
         <div className="w-fit flex flex-col justify-between items-end">
-          <span className="text-sm text-muted-foreground">{id}</span>
           {status === "pending" && (
             <Badge variant="outline">待发货</Badge>
           )}
@@ -66,6 +67,11 @@ export function OrderItem({
               已取消
             </Badge>
           )}
+          <div className="pr-1">
+            <span className="mr-1 text-xs">实付款</span>
+            <span className="text-lg font-semibold before:content-['￥'] before:text-xs before:font-normal">{priceStrSplitted[0]}</span>
+            {priceStrSplitted.length === 2 && <span className="font-semibold before:content-['.']">{priceStrSplitted[1]}</span>}
+          </div>
         </div>
       </div>
       {status === "delivering" && (
