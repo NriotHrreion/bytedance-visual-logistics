@@ -1,4 +1,4 @@
-export type DeliveryStatus = "pending" | "delivering" | "delivered";
+export type DeliveryStatus = "pending" | "delivering" | "delivered" | "received" | "cancelled";
 
 export type GeoLocation = [number, number];
 

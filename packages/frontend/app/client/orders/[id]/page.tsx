@@ -4,7 +4,6 @@ import { useMemo } from "react";
 import { mockOrderList } from "types/mocks";
 import dynamic from "next/dynamic";
 import { useParams } from "next/navigation";
-import { PackageCheck, TruckElectric } from "lucide-react";
 import {
   Timeline,
   TimelineItem,
@@ -15,7 +14,6 @@ import {
 } from "@/components/ui/timeline";
 import { GeoLocationLabel } from "@/components/geolocation-label";
 import { OrderItem } from "@/components/order-item";
-import { Hint, HintContent } from "@/components/ui/hint";
 
 const AMapContainer = dynamic(() => import("@/components/amap-container"), { ssr: false });
 
@@ -52,22 +50,33 @@ export default function OrderPage() {
             const isFirst = i === 0;
             const isLast = i === order.routes.length - 1;
             const isDelivered = order.status === "delivered";
+            const isReceived = order.status === "received";
+            const isCancelled = order.status === "cancelled";
             return (
               <TimelineItem
-                active={isLast}
-                success={isLast && isDelivered}
+                variant={(() => {
+                  if(!isLast) return "default";
+                  if(isDelivered || isReceived) return "success";
+                  if(isCancelled) return "destructive";
+                })()}
                 key={i}>
                 <TimelineItemHeader>
                   <TimelineItemTitle>
-                    {
-                      isFirst
-                      ? "已发货"
-                      : (
-                        isLast && isDelivered
-                        ? "已到货"
-                        : "配送中"
-                      )
-                    }
+                    {(() => {
+                      if(isFirst) {
+                        return "已发货";
+                      }
+                      if(isLast && isDelivered) {
+                        return "已到货";
+                      }
+                      if(isLast && isReceived) {
+                        return "已签收";
+                      }
+                      if(isLast && isCancelled) {
+                        return "已取消";
+                      }
+                      return "配送中";
+                    })()}
                   </TimelineItemTitle>
                   <TimelineItemTime time={time}/>
                 </TimelineItemHeader>
@@ -79,22 +88,6 @@ export default function OrderPage() {
           })}
         </Timeline>
         <OrderItem {...order} inOrderPage/>
-        <Hint
-          variant={order.status === "delivered" ? "success" : "default"}
-          className="mt-2">
-          {
-            order.status === "delivered"
-            ? <PackageCheck size={17}/>
-            : <TruckElectric size={17}/>
-          }
-          <HintContent>
-            {
-              order.status === "delivered"
-              ? "已送达 - 取件码 000-000-000"
-              : "预计明天送达"
-            }
-          </HintContent>
-        </Hint>
       </div>
     </div>
   );

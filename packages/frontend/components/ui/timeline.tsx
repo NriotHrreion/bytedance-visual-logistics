@@ -1,3 +1,4 @@
+import { cva, type VariantProps } from "class-variance-authority";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 
@@ -20,27 +21,32 @@ export function Timeline({
   );
 }
 
+const timelineItemVariants = cva(
+  "pl-4 flex flex-col gap-1 relative",
+  {
+    variants: {
+      variant: {
+        default: "",
+        active: "*:data-[slot=timeline-item-header]:before:border-amber-600 *:data-[slot=timeline-item-header]:before:bg-amber-600 **:data-[slot=timeline-item-title]:text-lg **:data-[slot=timeline-item-title]:text-amber-600",
+        success: "*:data-[slot=timeline-item-header]:before:border-green-600 *:data-[slot=timeline-item-header]:before:bg-green-600 **:data-[slot=timeline-item-title]:text-lg **:data-[slot=timeline-item-title]:text-green-600",
+        destructive: "*:data-[slot=timeline-item-header]:before:border-red-600 *:data-[slot=timeline-item-header]:before:bg-red-600 **:data-[slot=timeline-item-title]:text-lg **:data-[slot=timeline-item-title]:text-red-700",
+      }
+    },
+    defaultVariants: {
+      variant: "default"
+    }
+  }
+);
+
 export function TimelineItem({
-  active = false,
-  success = false,
+  variant,
   className,
   ...props
-}: React.ComponentProps<"div"> & {
-  active?: boolean
-  success?: boolean
-}) {
+}: React.ComponentProps<"div"> & VariantProps<typeof timelineItemVariants>) {
   return (
     <div
       data-slot="timeline-item"
-      className={cn(
-        "pl-4 flex flex-col gap-1 relative",
-        active && "*:data-[slot=timeline-item-header]:before:border-amber-600 *:data-[slot=timeline-item-header]:before:bg-amber-600",
-        active && "**:data-[slot=timeline-item-title]:text-lg **:data-[slot=timeline-item-title]:text-amber-600",
-        success && "*:data-[slot=timeline-item-header]:before:border-green-600 *:data-[slot=timeline-item-header]:before:bg-green-600",
-        success && "**:data-[slot=timeline-item-title]:text-lg **:data-[slot=timeline-item-title]:text-green-600",
-        className
-      )}
-      data-active={active}
+      className={timelineItemVariants({ variant, className })}
       {...props}/>
   );
 }
