@@ -15,3 +15,8 @@ export interface Order {
   }[]
   destination: GeoLocation
 }
+
+export type APIResponse<T> = T & {
+  code: number
+  error: string
+};

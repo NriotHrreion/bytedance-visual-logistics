@@ -15,7 +15,8 @@
   "author": "NriotHrreion",
   "packageManager": "pnpm@10.22.0",
   "dependencies": {
-    "express": "^5.1.0"
+    "express": "^5.1.0",
+    "reflect-metadata": "^0.2.2"
   },
   "devDependencies": {
     "@types/express": "^5.0.5"

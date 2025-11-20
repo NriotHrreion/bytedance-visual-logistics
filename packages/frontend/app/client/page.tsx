@@ -11,7 +11,7 @@ import {
   InputGroupInput
 } from "@/components/ui/input-group";
 import { OrderItem } from "@/components/order-item";
-import { searchStringCompare } from "@/lib/utils";
+import { searchStringCompare } from "@/lib/search";
 
 export default function ClientPage() {
   const [orderList, setOrderList] = useState<Order[]>([]);
@@ -31,7 +31,7 @@ export default function ClientPage() {
           </InputGroupAddon>
           <InputGroupInput
             value={searchValue}
-            placeholder="请输入订单号..."
+            placeholder="查询订单..."
             autoFocus
             onChange={(e) => setSearchValue(e.target.value)}
             suppressHydrationWarning/>

@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { GeoLocationLabel } from "@/components/geolocation-label";
 import { Hint, HintContent } from "./ui/hint";
+import { Price } from "./price";
 
 export function OrderItem({
   id,
@@ -20,7 +21,6 @@ export function OrderItem({
 }: Order & {
   inOrderPage?: boolean
 }) {
-  const priceStrSplitted = price.toString().split(".");
   const latestRoute = routes.length > 0 ? routes[routes.length - 1] : null;
 
   return (
@@ -69,8 +69,7 @@ export function OrderItem({
           )}
           <div className="pr-1">
             <span className="mr-1 text-xs">实付款</span>
-            <span className="text-lg font-semibold before:content-['￥'] before:text-xs before:font-normal">{priceStrSplitted[0]}</span>
-            {priceStrSplitted.length === 2 && <span className="font-semibold before:content-['.']">{priceStrSplitted[1]}</span>}
+            <Price price={price} className="inline-block"/>
           </div>
         </div>
       </div>
@@ -83,7 +82,7 @@ export function OrderItem({
       {status === "delivered" && (
         <Hint variant="success">
           <PackageCheck size={17}/>
-          <HintContent>已送达 - 取件码 000-000-000</HintContent>
+          <HintContent>已送达 - 取件码 <span className="font-semibold">000-000-000</span></HintContent>
         </Hint>
       )}
       <div className="border-t pt-2 flex justify-between items-center whitespace-nowrap">
