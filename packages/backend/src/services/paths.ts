@@ -1,4 +1,4 @@
-import { DeliveryPath } from "types";
+import { DeliveryPath, DeliveryPathSubmissionDTO } from "types";
 import { db } from "../db";
 import { geoLocationFromString } from "../utils";
 
@@ -19,5 +19,12 @@ export class PathsService {
       action: row.action,
       claimCode: row.claim_code || undefined
     }));
+  }
+
+  async pushDeliveryPath(orderId: string, path: DeliveryPathSubmissionDTO) {
+    await db.query(
+      "insert into delivery_paths (order_id, time, location, action, claim_code) values ($1, to_timestamp($2 / 1000.0), $3, $4, $5);",
+      [orderId, Date.now(), path.location, path.action, path.claimCode || null]
+    );
   }
 }

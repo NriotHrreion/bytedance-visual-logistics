@@ -1,4 +1,4 @@
-import { DeliveryStatus, Order } from "types";
+import { DeliveryStatus, Order, OrderSubmissionDTO } from "types";
 import { db } from "../db";
 import {
   generateRandomString,
@@ -31,7 +31,7 @@ export class OrdersService {
     return this.rowToOrder(result.rows[0]);
   }
 
-  async createOrder(order: Omit<Order, "id" | "status">): Promise<string> {
+  async createOrder(order: OrderSubmissionDTO): Promise<string> {
     const result = await db.query(
       "insert into orders (id, name, price, created_at, status, destination) values ($1, $2, $3, to_timestamp($4 / 1000.0), $5, $6);",
       [generateRandomString(12), order.name, order.price, Date.now(), "pending", geoLocationToString(order.destination)]

@@ -1,6 +1,6 @@
 export type DeliveryStatus = "pending" | "delivering" | "delivered" | "received" | "cancelled";
 
-export type GeoLocation = [number, number];
+export type GeoLocation = [number, number]; // [longtitude, latitude]
 
 export interface DeliveryPath {
   time: number
@@ -9,20 +9,23 @@ export interface DeliveryPath {
   claimCode?: string
 }
 
+export type DeliveryPathSubmissionDTO = Omit<DeliveryPath, "time">;
+
 export interface Order {
   id: string
   name: string
   price: number
   createdAt: number
-  sentAt?: number
   status: DeliveryStatus
   destination: GeoLocation
 }
 
-export type OrderDTO = Order & {
+export type OrderInfoDTO = Order & {
   currentLocation?: GeoLocation
   claimCode?: string
 }
+
+export type OrderSubmissionDTO = Omit<Order, "id" | "status" | "createdAt">;
 
 export type APIResponse<T> = T & {
   code: number

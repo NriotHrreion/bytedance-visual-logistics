@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import type { Order, OrderDTO } from "types";
+import type { Order, OrderInfoDTO, OrderSubmissionDTO } from "types";
 import { Get, Post, Routable, Controller, Delete } from "../controller";
 import { OrdersService } from "../services/orders";
 import { PathsService } from "../services/paths";
@@ -12,7 +12,7 @@ export class OrdersController extends Controller {
   @Get("/")
   async getOrderList(req: Request, res: Response) {
     const orderList = await this.ordersService.getOrders();
-    const orderDTOList: OrderDTO[] = [];
+    const orderDTOList: OrderInfoDTO[] = [];
 
     for(const order of orderList) {
       const paths = await this.pathsService.getPathsByOrderId(order.id) ?? [];
@@ -41,13 +41,13 @@ export class OrdersController extends Controller {
         ...order,
         currentLocation: paths[paths.length - 1]?.location,
         claimCode: paths[paths.length - 1]?.claimCode
-      } as OrderDTO
+      } as OrderInfoDTO
     });
   }
 
   @Post("/")
   async createOrder(req: Request, res: Response) {
-    const submittedOrder: Omit<Order, "id" | "status"> = req.body;
+    const submittedOrder: OrderSubmissionDTO = req.body;
     const newOrderId: string = await this.ordersService.createOrder(submittedOrder);
     this.sendResponse(res, { id: newOrderId });
   }
