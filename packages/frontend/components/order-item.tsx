@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { GeoLocationLabel } from "@/components/geolocation-label";
 import { Hint, HintContent } from "./ui/hint";
 import { Price } from "./price";
+import { useOrders } from "@/hooks/use-orders";
 
 export function OrderItem({
   id,
@@ -15,13 +16,14 @@ export function OrderItem({
   price,
   createdAt,
   status,
-  routes,
   destination,
+  currentLocation,
+  claimCode,
   inOrderPage = false
 }: Order & {
   inOrderPage?: boolean
 }) {
-  const latestRoute = routes.length > 0 ? routes[routes.length - 1] : null;
+  const { receive } = useOrders();
 
   return (
     <Card className="p-3 gap-2">
@@ -32,10 +34,10 @@ export function OrderItem({
             className="font-semibold hover:underline decoration-2 whitespace-nowrap text-ellipsis overflow-hidden">
             {name}
           </Link>
-          {routes.length > 0 && <GeoLocationLabel className="text-sm whitespace-nowrap" location={latestRoute.location}/>}
+          {currentLocation && <GeoLocationLabel className="text-sm whitespace-nowrap" location={currentLocation}/>}
           <span
             className="text-sm text-muted-foreground"
-            title={createdAt.toTimeString()}>
+            title={new Date(createdAt).toTimeString()}>
             {format(createdAt, "yyyy-MM-dd HH:mm")}
           </span>
         </div>
@@ -79,10 +81,10 @@ export function OrderItem({
           <HintContent>预计明天送达</HintContent>
         </Hint>
       )}
-      {status === "delivered" && (
+      {claimCode && (
         <Hint variant="success">
           <PackageCheck size={17}/>
-          <HintContent>已送达 - 取件码 <span className="font-semibold">000-000-000</span></HintContent>
+          <HintContent>已送达 - 取件码 <span className="font-semibold">{claimCode}</span></HintContent>
         </Hint>
       )}
       <div className="border-t pt-2 flex justify-between items-center whitespace-nowrap">
@@ -102,7 +104,7 @@ export function OrderItem({
             </Button>
           )}
           {(status !== "pending" && status !== "received" && status !== "cancelled") && (
-            <Button size="xs">
+            <Button size="xs" onClick={() => receive(id)}>
               确认收货
             </Button>
           )}

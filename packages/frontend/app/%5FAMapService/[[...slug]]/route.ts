@@ -1,12 +1,10 @@
-import https from "https";
-import { NextRequest, NextResponse } from "next/server";
-import { amapRestAPIBase, amapWebAPIBase } from "@/lib/global";
+import { type NextRequest, NextResponse } from "next/server";
 
 async function proxyRequest(req: NextRequest, method: string) {
   const url = new URL(req.url);
   url.pathname = url.pathname.replace("/_AMapService", "");
   url.protocol = "https:";
-  url.hostname = url.pathname === "/v4/map/styles" ? amapWebAPIBase : amapRestAPIBase;
+  url.hostname = url.pathname === "/v4/map/styles" ? "webapi.amap.com" : "restapi.amap.com";
   url.port = "";
   url.searchParams.append("jscode", process.env["AMAP_API_SECRET"]);
 

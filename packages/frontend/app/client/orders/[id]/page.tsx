@@ -1,7 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { mockOrderList } from "types/mocks";
+import { useState } from "react";
 import dynamic from "next/dynamic";
 import { useParams } from "next/navigation";
 import {
@@ -15,12 +14,15 @@ import {
 import { GeoLocationLabel } from "@/components/geolocation-label";
 import { OrderItem } from "@/components/order-item";
 import { copyToClipboard } from "@/lib/utils";
+import { useOrder } from "@/hooks/use-order";
+import { useDeliveryPaths } from "@/hooks/use-delivery-paths";
 
 const AMapContainer = dynamic(() => import("@/components/amap-container"), { ssr: false });
 
 export default function OrderPage() {
   const { id } = useParams<{ id: string }>();
-  const order = useMemo(() => mockOrderList.find(({ id: _id }) => id === _id), [id]);
+  const { order } = useOrder(id);
+  const { paths } = useDeliveryPaths(id);
   const [codeCopied, setCodeCopied] = useState(false);
 
   const handleCopyClaimCode = async () => {
@@ -44,7 +46,7 @@ export default function OrderPage() {
     );
   }
   
-  const latestRoute = order.routes.length > 0 ? order.routes[order.routes.length - 1] : null;
+  const latestRoute = paths.length > 0 ? paths[paths.length - 1] : null;
   
   return (
     <div>
@@ -54,13 +56,13 @@ export default function OrderPage() {
           <TimelineItem>
             <TimelineItemHeader>
               <TimelineItemTitle>订单已创建</TimelineItemTitle>
-              <TimelineItemTime time={order.createdAt}/>
+              <TimelineItemTime time={new Date(order.createdAt)}/>
             </TimelineItemHeader>
             {order.status === "pending" && <TimelineItemContent>待发货</TimelineItemContent>}
           </TimelineItem>
-          {order.routes.map(({ time, location }, i) => {
-            const isFirst = i === 0;
-            const isLast = i === order.routes.length - 1;
+
+          {paths.map(({ time, location, action, claimCode }, i) => {
+            const isLast = i === paths.length - 1;
             const isDelivered = order.status === "delivered";
             const isReceived = order.status === "received";
             const isCancelled = order.status === "cancelled";
@@ -73,30 +75,14 @@ export default function OrderPage() {
                 })()}
                 key={i}>
                 <TimelineItemHeader>
-                  <TimelineItemTitle>
-                    {(() => {
-                      if(isFirst) {
-                        return "已发货";
-                      }
-                      if(isLast && isDelivered) {
-                        return "待取件";
-                      }
-                      if(isLast && isReceived) {
-                        return "已签收";
-                      }
-                      if(isLast && isCancelled) {
-                        return "已取消";
-                      }
-                      return "配送中";
-                    })()}
-                  </TimelineItemTitle>
-                  <TimelineItemTime time={time}/>
+                  <TimelineItemTitle>{action}</TimelineItemTitle>
+                  <TimelineItemTime time={new Date(time)}/>
                 </TimelineItemHeader>
                 <TimelineItemContent>
                   <GeoLocationLabel location={location}/>
-                  {(isLast && isDelivered) && (
+                  {(isLast && claimCode) && (
                     <div className="mt-1 px-3 py-2 border bg-muted rounded-md flex flex-col gap-1">
-                      <span className="text-2xl text-foreground font-semibold">000-000-000</span>
+                      <span className="text-2xl text-foreground font-semibold">{claimCode}</span>
                       <div className="flex justify-between">
                         <span className="text-sm">快递驿站 取件码</span>
                         <button

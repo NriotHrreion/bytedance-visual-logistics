@@ -9,7 +9,7 @@ interface RouteHandler {
   handlerName: string
 }
 
-export abstract class Servlet {
+export abstract class Controller {
   public router: Router = express.Router();
 
   protected sendOk(res: Response) {
@@ -26,7 +26,6 @@ export abstract class Servlet {
 
   protected sendError(res: Response, code: number, message?: string) {
     res.status(code);
-    if(message) res.statusMessage = message;
     res.json({
       code,
       message: message ?? res.statusMessage
@@ -44,7 +43,7 @@ export function Routable<C extends { new(...args: any[]): {} }>(constructor: C) 
         const handler = this[route.handlerName];
         if(typeof handler === "function" && route.handlerName !== "constructor") {
           try {
-            (this as any as Servlet).router[route.method](route.path, handler.bind(this));
+            (this as any as Controller).router[route.method](route.path, handler.bind(this));
           } catch (e) {
             console.error(`Cannot register route "${route.handlerName}": ${e}`);
           }

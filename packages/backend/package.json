@@ -15,10 +15,13 @@
   "author": "NriotHrreion",
   "packageManager": "pnpm@10.22.0",
   "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "reflect-metadata": "^0.2.2"
   },
   "devDependencies": {
+    "@types/cors": "^2.8.19",
     "@types/express": "^5.0.5"
   }
 }

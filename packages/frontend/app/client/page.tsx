@@ -1,9 +1,7 @@
 "use client";
 
-import type { Order } from "types";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Package, X } from "lucide-react";
-import { mockOrderList } from "types/mocks";
 import {
   InputGroup,
   InputGroupAddon,
@@ -12,14 +10,12 @@ import {
 } from "@/components/ui/input-group";
 import { OrderItem } from "@/components/order-item";
 import { searchStringCompare } from "@/lib/search";
+import { useOrders } from "@/hooks/use-orders";
+import { Spinner } from "@/components/ui/spinner";
 
 export default function ClientPage() {
-  const [orderList, setOrderList] = useState<Order[]>([]);
+  const { orders, isLoading } = useOrders();
   const [searchValue, setSearchValue] = useState("");
-
-  useEffect(() => {
-    setTimeout(() => setOrderList(mockOrderList), 50);
-  }, []);
 
   return (
     <div className="px-8 max-sm:px-4 flex flex-col gap-4">
@@ -47,13 +43,22 @@ export default function ClientPage() {
       </header>
       <div className="flex flex-col gap-3">
         {
-          orderList
-            .filter(({ id, name }) => (
-              searchValue !== ""
-              ? (id.includes(searchValue) || searchStringCompare(name, searchValue))
-              : true
-            ))
-            .map((order) => <OrderItem {...order} key={order.id}/>)
+          isLoading
+          ? (
+            <div className="self-center flex items-center gap-2">
+              <Spinner />
+              <span>加载中...</span>
+            </div>
+          )
+          : (
+            orders
+              .filter(({ id, name }) => (
+                searchValue !== ""
+                ? (id.includes(searchValue) || searchStringCompare(name, searchValue))
+                : true
+              ))
+              .map((order) => <OrderItem {...order} key={order.id}/>)
+          )
         }
       </div>
     </div>

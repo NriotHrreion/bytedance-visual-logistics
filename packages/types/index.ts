@@ -2,18 +2,23 @@ export type DeliveryStatus = "pending" | "delivering" | "delivered" | "received"
 
 export type GeoLocation = [number, number];
 
+export interface DeliveryPath {
+  time: number
+  location: GeoLocation
+  action: string
+  claimCode?: string
+}
+
 export interface Order {
   id: string
   name: string
   price: number
-  createdAt: Date
-  sentAt?: Date
+  createdAt: number
+  sentAt?: number
   status: DeliveryStatus
-  routes: {
-    time: Date
-    location: GeoLocation
-  }[]
   destination: GeoLocation
+  currentLocation?: GeoLocation
+  claimCode?: string
 }
 
 export type APIResponse<T> = T & {
