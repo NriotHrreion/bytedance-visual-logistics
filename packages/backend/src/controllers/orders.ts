@@ -1,92 +1,105 @@
 import type { Request, Response } from "express";
-import { mockOrderList, mockPathsStore } from "types/mocks";
+import type { Order, OrderDTO } from "types";
 import { Get, Post, Routable, Controller, Delete } from "../controller";
-import { Order } from "types";
-import { generateRandomString } from "../utils";
+import { OrdersService } from "../services/orders";
+import { PathsService } from "../services/paths";
 
 @Routable
 export class OrdersController extends Controller {
+  private ordersService = new OrdersService();
+  private pathsService = new PathsService();
+
   @Get("/")
-  getOrderList(req: Request, res: Response) {
-    this.sendResponse(res, {
-      orders: mockOrderList.map((order) => {
-        const paths = mockPathsStore.get(order.id) ?? [];
-        return {
-          ...order,
-          currentLocation: paths[paths.length - 1]?.location,
-          claimCode: paths[paths.length - 1]?.claimCode
-        } as Order;
-      })
-    });
+  async getOrderList(req: Request, res: Response) {
+    const orderList = await this.ordersService.getOrders();
+    const orderDTOList: OrderDTO[] = [];
+
+    for(const order of orderList) {
+      const paths = await this.pathsService.getPathsByOrderId(order.id) ?? [];
+      orderDTOList.push({
+        ...order,
+        currentLocation: paths[paths.length - 1]?.location,
+        claimCode: paths[paths.length - 1]?.claimCode
+      });
+    }
+
+    this.sendResponse(res, { orders: orderDTOList });
   }
 
   @Get("/:id")
-  getOrder(req: Request, res: Response) {
+  async getOrder(req: Request, res: Response) {
     const id = req.params.id;
-    const order = mockOrderList.find(({ id: _id }) => _id === id);
+    const order = await this.ordersService.getOrderById(id);
     if(!order) {
       this.sendError(res, 404, "Cannot find the order");
       return;
     }
 
-    const paths = mockPathsStore.get(order.id) ?? [];
+    const paths = await this.pathsService.getPathsByOrderId(order.id) ?? [];
     this.sendResponse(res, {
       order: {
         ...order,
         currentLocation: paths[paths.length - 1]?.location,
         claimCode: paths[paths.length - 1]?.claimCode
-      } as Order
+      } as OrderDTO
     });
   }
 
   @Post("/")
-  createOrder(req: Request, res: Response) {
-    const submittedOrder: Omit<Order, "id"> = req.body;
-    const newOrder: Order = {
-      id: generateRandomString(6),
-      ...submittedOrder
-    };
-
-    /** @todo */
-
-    this.sendResponse(res, {
-      id: newOrder.id
-    });
+  async createOrder(req: Request, res: Response) {
+    const submittedOrder: Omit<Order, "id" | "status"> = req.body;
+    const newOrderId: string = await this.ordersService.createOrder(submittedOrder);
+    this.sendResponse(res, { id: newOrderId });
   }
 
   @Delete("/:id")
-  deleteOrder(req: Request, res: Response) {
+  async deleteOrder(req: Request, res: Response) {
     const id = req.params.id;
-
-    /** @todo */
-
+    await this.ordersService.deleteOrder(id);
     this.sendOk(res);
   }
 
   @Post("/:id/deliver")
-  deliverOrder(req: Request, res: Response) {
+  async deliverOrder(req: Request, res: Response) {
     const id = req.params.id;
+    if(await this.ordersService.getOrderStatus(id) !== "pending") {
+      this.sendError(res, 400, "The order is not pending delivery");
+      return;
+    }
 
-    /** @todo */
+    await this.ordersService.updateOrderStatus(id, "delivering");
+    this.sendOk(res);
+  }
 
+  @Post("/:id/delivered")
+  async orderDelivered(req: Request, res: Response) {
+    const id = req.params.id;
+    if(await this.ordersService.getOrderStatus(id) !== "delivering") {
+      this.sendError(res, 400, "The order is not in delivering status");
+      return;
+    }
+
+    await this.ordersService.updateOrderStatus(id, "delivered");
     this.sendOk(res);
   }
 
   @Post("/:id/receive")
-  receiveOrder(req: Request, res: Response) {
+  async receiveOrder(req: Request, res: Response) {
     const id = req.params.id;
+    const status = await this.ordersService.getOrderStatus(id);
+    if(status === "pending" || status === "cancelled") {
+      this.sendError(res, 400, "The order is pending delivery or has been cancelled");
+      return;
+    }
 
-    /** @todo */
-
+    await this.ordersService.updateOrderStatus(id, "received");
     this.sendOk(res);
   }
 
   @Post("/:id/cancel")
-  cancelOrder(req: Request, res: Response) {
+  async cancelOrder(req: Request, res: Response) {
     const id = req.params.id;
-
-    /** @todo */
-
+    await this.ordersService.updateOrderStatus(id, "cancelled");
     this.sendOk(res);
   }
 }

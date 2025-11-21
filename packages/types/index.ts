@@ -17,6 +17,9 @@ export interface Order {
   sentAt?: number
   status: DeliveryStatus
   destination: GeoLocation
+}
+
+export type OrderDTO = Order & {
   currentLocation?: GeoLocation
   claimCode?: string
 }

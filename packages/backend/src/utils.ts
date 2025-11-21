@@ -1,3 +1,5 @@
+import { GeoLocation } from "types";
+
 export function getRandom(min: number, max: number): number {
     return Math.floor(Math.random() * (max - min + 1) + min);
 }
@@ -9,4 +11,12 @@ export function generateRandomString(length: number): string {
     result += chars[getRandom(0, chars.length - 1)];
   }
   return result;
+}
+
+export function geoLocationFromString(locationStr: string): GeoLocation {
+  return locationStr.replace("(", "").replace(")", "").split(",").map(parseFloat) as GeoLocation;
+}
+
+export function geoLocationToString(location: GeoLocation): string {
+  return `(${location[0]},${location[1]})`;
 }

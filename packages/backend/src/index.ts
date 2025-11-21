@@ -21,6 +21,6 @@ app.use((req, res, next) => {
 app.use("/v1/orders", new OrdersController().router);
 app.use("/v1/paths", new PathsController().router);
 
-app.listen(PORT, () => {
-  console.log(styleText("green", `Backend Server is ready on port ${PORT}.`))
+app.listen(PORT, async () => {
+  console.log(styleText("green", `Backend Server is ready on port ${PORT}.`));
 });
