@@ -4,7 +4,7 @@ import { geoLocationFromString } from "../utils";
 
 export class PathsService {
   async getPathsByOrderId(orderId: string): Promise<DeliveryPath[] | null> {
-    const order = await db.query("select * from orders where id = $1;", [orderId]);
+    const order = await db.query("select * from orders where id = $1 order;", [orderId]);
     if(order.rows.length === 0) {
       return null;
     }
