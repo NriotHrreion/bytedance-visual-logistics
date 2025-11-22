@@ -1,4 +1,4 @@
-import type { Order } from "types";
+import type { OrderInfoDTO } from "types";
 import useSWR from "swr";
 import { backendAPI } from "@/lib/global";
 
@@ -8,19 +8,19 @@ export function useOrder(id: string) {
   });
 
   return {
-    order: (!isLoading && !error) ? data.order as Order : null,
+    order: (!isLoading && !error) ? data.order as OrderInfoDTO : null,
     error,
     isLoading,
-    deliver(id: string) {
+    deliver() {
       return backendAPI.post(`/orders/${id}/deliver`);
     },
-    receive(id: string) {
+    receive() {
       return backendAPI.post(`/orders/${id}/receive`);
     },
-    cancel(id: string) {
+    cancel() {
       return backendAPI.post(`/orders/${id}/cancel`);
     },
-    delete(id: string) {
+    delete() {
       return backendAPI.delete(`/orders/${id}`);
     }
   };

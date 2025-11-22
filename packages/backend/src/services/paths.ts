@@ -1,10 +1,10 @@
 import { DeliveryPath, DeliveryPathSubmissionDTO } from "types";
 import { db } from "../db";
-import { geoLocationFromString } from "../utils";
+import { deserializeGeoLocation, serializeGeoLocation } from "../utils";
 
 export class PathsService {
   async getPathsByOrderId(orderId: string): Promise<DeliveryPath[] | null> {
-    const order = await db.query("select * from orders where id = $1 order;", [orderId]);
+    const order = await db.query("select * from orders where id = $1;", [orderId]);
     if(order.rows.length === 0) {
       return null;
     }
@@ -15,16 +15,21 @@ export class PathsService {
     );
     return result.rows.map((row: any) => ({
       time: new Date(row.time).getTime(),
-      location: geoLocationFromString(row.location),
+      location: deserializeGeoLocation(row.location),
       action: row.action,
       claimCode: row.claim_code || undefined
     }));
   }
 
   async pushDeliveryPath(orderId: string, path: DeliveryPathSubmissionDTO) {
+    const order = await db.query("select * from orders where id = $1;", [orderId]);
+    if(order.rows.length === 0) {
+      throw new Error("Cannot find the order");
+    }
+
     await db.query(
-      "insert into delivery_paths (order_id, time, location, action, claim_code) values ($1, to_timestamp($2 / 1000.0), $3, $4, $5);",
-      [orderId, Date.now(), path.location, path.action, path.claimCode || null]
+      "insert into delivery_paths (order_id, time, location, action, claim_code) values ($1, to_timestamp($2::numeric / 1000), $3, $4, $5);",
+      [orderId, Date.now(), serializeGeoLocation(path.location), path.action, path.claimCode || null]
     );
   }
 }

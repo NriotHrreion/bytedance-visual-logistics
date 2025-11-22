@@ -1,6 +1,5 @@
-import type { Order } from "types";
+import type { OrderInfoDTO } from "types";
 import Link from "next/link";
-import { format } from "date-fns";
 import { PackageCheck, TruckElectric } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -8,7 +7,8 @@ import { Button } from "@/components/ui/button";
 import { GeoLocationLabel } from "@/components/geolocation-label";
 import { Hint, HintContent } from "./ui/hint";
 import { Price } from "./price";
-import { useOrders } from "@/hooks/use-orders";
+import { useOrder } from "@/hooks/use-order";
+import { formatDate } from "@/lib/utils";
 
 export function OrderItem({
   id,
@@ -20,10 +20,10 @@ export function OrderItem({
   currentLocation,
   claimCode,
   inOrderPage = false
-}: Order & {
+}: OrderInfoDTO & {
   inOrderPage?: boolean
 }) {
-  const { receive } = useOrders();
+  const { receive } = useOrder(id);
 
   return (
     <Card className="p-3 gap-2">
@@ -38,7 +38,7 @@ export function OrderItem({
           <span
             className="text-sm text-muted-foreground"
             title={new Date(createdAt).toTimeString()}>
-            {format(createdAt, "yyyy-MM-dd HH:mm")}
+            {formatDate(createdAt)}
           </span>
         </div>
         <div className="w-fit flex flex-col justify-between items-end">
@@ -104,7 +104,10 @@ export function OrderItem({
             </Button>
           )}
           {(status !== "pending" && status !== "received" && status !== "cancelled") && (
-            <Button size="xs" onClick={() => receive(id)}>
+            <Button size="xs" onClick={() => {
+              receive();
+              window.location.reload();
+            }}>
               确认收货
             </Button>
           )}

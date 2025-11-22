@@ -13,10 +13,10 @@ export function generateRandomString(length: number): string {
   return result;
 }
 
-export function geoLocationFromString(locationStr: string): GeoLocation {
+export function deserializeGeoLocation(locationStr: string): GeoLocation {
   return locationStr.replace("(", "").replace(")", "").split(",").map(parseFloat) as GeoLocation;
 }
 
-export function geoLocationToString(location: GeoLocation): string {
+export function serializeGeoLocation(location: GeoLocation): string {
   return `(${location[0]},${location[1]})`;
 }

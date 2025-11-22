@@ -17,6 +17,7 @@ export interface Order {
   price: number
   createdAt: number
   status: DeliveryStatus
+  origin: GeoLocation
   destination: GeoLocation
 }
 

@@ -1,6 +1,5 @@
 import { cva, type VariantProps } from "class-variance-authority";
-import { format } from "date-fns";
-import { cn } from "@/lib/utils";
+import { cn, formatDate } from "@/lib/utils";
 
 export function Timeline({
   reverse = false,
@@ -78,12 +77,10 @@ export function TimelineItemTitle({ className, ...props }: React.ComponentProps<
 
 export function TimelineItemTime({
   time,
-  format: formatStr = "yyyy-MM-dd hh:mm",
   className,
   ...props
 }: React.ComponentProps<"span"> & {
-  time: Date,
-  format?: string
+  time: Date
 }) {
   return (
     <span
@@ -94,7 +91,7 @@ export function TimelineItemTime({
       )}
       title={time.toTimeString()}
       {...props}>
-      {format(time, formatStr)}
+      {formatDate(time)}
     </span>
   );
 }

@@ -1,9 +1,9 @@
 import { DeliveryStatus, Order, OrderSubmissionDTO } from "types";
 import { db } from "../db";
 import {
+  deserializeGeoLocation,
   generateRandomString,
-  geoLocationFromString,
-  geoLocationToString
+  serializeGeoLocation,
 } from "../utils";
 
 export class OrdersService {
@@ -14,7 +14,8 @@ export class OrdersService {
       price: parseFloat(row.price),
       createdAt: new Date(row.created_at).getTime(),
       status: row.status,
-      destination: geoLocationFromString(row.destination)
+      origin: deserializeGeoLocation(row.origin),
+      destination: deserializeGeoLocation(row.destination)
     };
   }
 
@@ -33,8 +34,8 @@ export class OrdersService {
 
   async createOrder(order: OrderSubmissionDTO): Promise<string> {
     const result = await db.query(
-      "insert into orders (id, name, price, created_at, status, destination) values ($1, $2, $3, to_timestamp($4 / 1000.0), $5, $6);",
-      [generateRandomString(12), order.name, order.price, Date.now(), "pending", geoLocationToString(order.destination)]
+      "insert into orders (id, name, price, created_at, status, origin, destination) values ($1, $2, $3, to_timestamp($4 / 1000.0), $5, $6, $7);",
+      [generateRandomString(12), order.name, order.price, Date.now(), "pending", serializeGeoLocation(order.origin), serializeGeoLocation(order.destination)]
     );
     return result.rows[0].id;
   }

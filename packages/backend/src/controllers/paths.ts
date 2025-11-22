@@ -21,17 +21,17 @@ export class PathsController extends Controller {
     this.sendResponse(res, { paths });
   }
 
-  @Post("/:id")
-  async pushDeliveryPath(req: Request, res: Response) {
-    const id = req.params.id;
-    const order = await this.ordersService.getOrderById(id);
-    if(!order) {
-      this.sendError(res, 404, "Cannot find the order");
-      return;
-    }
+  // @Post("/:id")
+  // async pushDeliveryPath(req: Request, res: Response) {
+  //   const id = req.params.id;
+  //   const order = await this.ordersService.getOrderById(id);
+  //   if(!order) {
+  //     this.sendError(res, 404, "Cannot find the order");
+  //     return;
+  //   }
 
-    const submittedPath: DeliveryPathSubmissionDTO = req.body;
-    await this.pathsService.pushDeliveryPath(id, submittedPath);
-    this.sendOk(res);
-  }
+  //   const submittedPath: DeliveryPathSubmissionDTO = req.body;
+  //   await this.pathsService.pushDeliveryPath(id, submittedPath);
+  //   this.sendOk(res);
+  // }
 }

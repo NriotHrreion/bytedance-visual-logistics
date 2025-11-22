@@ -1,4 +1,4 @@
-import type { Order } from "types";
+import type { OrderInfoDTO } from "types";
 import useSWR from "swr";
 import { backendAPI } from "@/lib/global";
 
@@ -8,7 +8,7 @@ export function useOrders() {
   });
 
   return {
-    orders: (!isLoading && !error) ? data.orders as Order[] : [],
+    orders: (!isLoading && !error) ? data.orders as OrderInfoDTO[] : [],
     error,
     isLoading,
     deliver(id: string) {
