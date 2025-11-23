@@ -46,17 +46,15 @@ export function OrderItem({
         <div className="flex-1 min-w-0 flex flex-col gap-2 justify-between">
           <Link
             href={`/client/orders/${id}`}
-            className="font-semibold hover:underline decoration-2 whitespace-nowrap text-ellipsis overflow-hidden">
+            className="mb-auto font-semibold hover:underline decoration-2 whitespace-nowrap text-ellipsis overflow-hidden">
             {name}
           </Link>
-          <div className="flex flex-col gap-2">
-            {currentLocation && <GeoLocationLabel className="text-sm whitespace-nowrap" location={currentLocation}/>}
-            <span
-              className="text-sm text-muted-foreground"
-              title={new Date(createdAt).toTimeString()}>
-              {formatDate(createdAt)}
-            </span>
-          </div>
+          {currentLocation && <GeoLocationLabel className="text-sm whitespace-nowrap" location={currentLocation}/>}
+          <span
+            className="text-sm text-muted-foreground"
+            title={new Date(createdAt).toTimeString()}>
+            {formatDate(createdAt)}
+          </span>
         </div>
         <div className="w-fit flex flex-col justify-between items-end">
           {status === "pending" && (

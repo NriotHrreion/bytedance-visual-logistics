@@ -15,6 +15,7 @@ import { OrderItem } from "@/components/order-item";
 import { searchStringCompare } from "@/lib/search";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { CreateOrderDialog } from "./create-order-dialog";
 
 interface OrderFilters extends FiltersType {
   status: Set<DeliveryStatus>
@@ -48,10 +49,12 @@ export default function AdminPage() {
             searchValue={searchValue}
             filters={filters}
             {...filterInput}/>
-          <Button>
-            <PackagePlus />
-            创建订单
-          </Button>
+          <CreateOrderDialog asChild>
+            <Button>
+              <PackagePlus />
+              创建订单
+            </Button>
+          </CreateOrderDialog>
         </div>
       </Header>
       <div className={cn(isLoading ? "flex flex-col" : "grid", "mt-4 grid-cols-2 gap-4")}>
