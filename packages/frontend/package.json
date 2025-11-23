@@ -16,6 +16,7 @@
   "packageManager": "pnpm@10.22.0",
   "dependencies": {
     "@amap/amap-jsapi-loader": "^1.0.1",
+    "@radix-ui/react-dropdown-menu": "^2.1.16",
     "@radix-ui/react-slot": "^1.2.4",
     "@tailwindcss/postcss": "^4.1.17",
     "axios": "^1.13.2",

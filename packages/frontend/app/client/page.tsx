@@ -12,6 +12,7 @@ import { OrderItem } from "@/components/order-item";
 import { searchStringCompare } from "@/lib/search";
 import { useOrders } from "@/hooks/use-orders";
 import { Spinner } from "@/components/ui/spinner";
+import { Header, HeaderTitle } from "@/components/ui/header";
 
 export default function ClientPage() {
   const { orders, isLoading } = useOrders();
@@ -19,8 +20,8 @@ export default function ClientPage() {
 
   return (
     <div className="px-8 max-sm:px-4 flex flex-col gap-4">
-      <header className="pt-10 space-y-8">
-        <h2 className="text-3xl font-semibold">我的订单</h2>
+      <Header>
+        <HeaderTitle>我的订单</HeaderTitle>
         <InputGroup>
           <InputGroupAddon>
             <Package />
@@ -40,7 +41,7 @@ export default function ClientPage() {
             </InputGroupButton>
           </InputGroupAddon>
         </InputGroup>
-      </header>
+      </Header>
       <div className="flex flex-col gap-3">
         {
           isLoading
