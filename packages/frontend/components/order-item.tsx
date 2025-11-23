@@ -1,6 +1,6 @@
 import type { OrderInfoDTO } from "types";
 import Link from "next/link";
-import { PackageCheck, TruckElectric } from "lucide-react";
+import { Ellipsis, PackageCheck, PackageMinus, PackageX, TruckElectric } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,13 @@ import { Hint, HintContent } from "./ui/hint";
 import { Price } from "./price";
 import { useOrder } from "@/hooks/use-order";
 import { formatDate } from "@/lib/utils";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuTrigger
+} from "./ui/dropdown-menu";
 
 export function OrderItem({
   id,
@@ -19,27 +26,37 @@ export function OrderItem({
   destination,
   currentLocation,
   claimCode,
-  inOrderPage = false
+  detailsHref,
+  deliverButton = false,
+  receiveButton = false,
+  cancelButton = false,
+  deleteButton = false
 }: OrderInfoDTO & {
-  inOrderPage?: boolean
+  detailsHref?: string
+  deliverButton?: boolean
+  receiveButton?: boolean
+  cancelButton?: boolean
+  deleteButton?: boolean
 }) {
-  const { receive } = useOrder(id);
+  const { deliver, receive, cancel, delete: del } = useOrder(id);
 
   return (
     <Card className="p-3 gap-2">
-      <div className="h-20 flex gap-6">
-        <div className="flex-1 min-w-0 flex flex-col justify-between">
+      <div className="flex-1 flex gap-6">
+        <div className="flex-1 min-w-0 flex flex-col gap-2 justify-between">
           <Link
             href={`/client/orders/${id}`}
             className="font-semibold hover:underline decoration-2 whitespace-nowrap text-ellipsis overflow-hidden">
             {name}
           </Link>
-          {currentLocation && <GeoLocationLabel className="text-sm whitespace-nowrap" location={currentLocation}/>}
-          <span
-            className="text-sm text-muted-foreground"
-            title={new Date(createdAt).toTimeString()}>
-            {formatDate(createdAt)}
-          </span>
+          <div className="flex flex-col gap-2">
+            {currentLocation && <GeoLocationLabel className="text-sm whitespace-nowrap" location={currentLocation}/>}
+            <span
+              className="text-sm text-muted-foreground"
+              title={new Date(createdAt).toTimeString()}>
+              {formatDate(createdAt)}
+            </span>
+          </div>
         </div>
         <div className="w-fit flex flex-col justify-between items-end">
           {status === "pending" && (
@@ -92,24 +109,64 @@ export function OrderItem({
           送至&nbsp;
           <GeoLocationLabel location={destination}/>
         </span>
-        <div className="space-x-2 flex-nowrap">
-          {!inOrderPage && (
+        <div className="flex items-center gap-2">
+          {detailsHref && (
             <Button
               variant="outline"
               size="xs"
               asChild>
-              <Link href={`/client/orders/${id}`}>
-                查看物流
+              <Link href={detailsHref}>
+                详细信息
               </Link>
             </Button>
           )}
-          {(status !== "pending" && status !== "received" && status !== "cancelled") && (
+          {deliverButton && (
+            <Button size="xs" onClick={() => {
+              deliver();
+              window.location.reload();
+            }}>
+              物流发货
+            </Button>
+          )}
+          {receiveButton && (
             <Button size="xs" onClick={() => {
               receive();
               window.location.reload();
             }}>
               确认收货
             </Button>
+          )}
+          {(cancelButton || deleteButton) && (
+            <DropdownMenu modal={false}>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon-sm">
+                  <Ellipsis />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start">
+                <DropdownMenuGroup>
+                  <DropdownMenuItem
+                    onClick={() => {
+                      cancel();
+                      window.location.reload();
+                    }}>
+                    <PackageMinus />
+                    取消订单
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    variant="destructive"
+                    onClick={() => {
+                      del();
+                      window.location.reload();
+                    }}>
+                    <PackageX />
+                    删除订单
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
+              </DropdownMenuContent>
+            </DropdownMenu>
           )}
         </div>
       </div>

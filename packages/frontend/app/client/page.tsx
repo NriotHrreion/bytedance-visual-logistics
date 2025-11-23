@@ -58,7 +58,13 @@ export default function ClientPage() {
                 ? (id.includes(searchValue) || searchStringCompare(name, searchValue))
                 : true
               ))
-              .map((order) => <OrderItem {...order} key={order.id}/>)
+              .map((order) => (
+                <OrderItem
+                  {...order}
+                  detailsHref={`/client/orders/${order.id}`}
+                  receiveButton={order.status !== "pending" && order.status !== "received" && order.status !== "cancelled"}
+                  key={order.id}/>
+              ))
           )
         }
       </div>

@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 export type FiltersType = Record<string, Set<string>>;
 
@@ -50,14 +51,20 @@ export function useFilterInput<F extends FiltersType>(defs: FilterDefs<F>) {
 
 export function FilterInput<F extends FiltersType>({
   defs,
+  searchValue,
+  setSearchValue,
   filters,
-  setFilters
+  setFilters,
+  placeholder,
+  className
 }: {
   defs: FilterDefs<F>
   searchValue: string
   setSearchValue: SetState<string>
   filters: F
   setFilters: SetState<F>
+  placeholder?: string
+  className?: string
 }) {
   function addFilter<I extends keyof F>(id: I, value: SetItem<F[I]>) {
     setFilters((prev) => {
@@ -98,7 +105,7 @@ export function FilterInput<F extends FiltersType>({
   }, [defs, filters]);
 
   return (
-    <div className="flex gap-2">
+    <div className={cn("flex gap-2", className)}>
       <InputGroup>
         <InputGroupAddon>
           <Package />
@@ -112,14 +119,15 @@ export function FilterInput<F extends FiltersType>({
             ))}
           </InputGroupAddon>
         )}
-        <InputGroupInput />
+        <InputGroupInput
+          value={searchValue}
+          onChange={(e) => setSearchValue(e.target.value)}
+          placeholder={placeholder}/>
       </InputGroup>
       {defs.map((filter, i) => (
         <DropdownMenu key={i}>
           <DropdownMenuTrigger asChild>
-            <Button
-              variant="outline"
-              className="cursor-pointer">
+            <Button variant="outline">
               <ListFilter />
               {filter.name}
             </Button>
@@ -127,7 +135,6 @@ export function FilterInput<F extends FiltersType>({
           <DropdownMenuContent>
             {filter.values.map((item, i) => (
               <DropdownMenuCheckboxItem
-                className="cursor-pointer"
                 checked={filters[filter.id].has(item.value)}
                 onCheckedChange={(checked) => {
                   checked

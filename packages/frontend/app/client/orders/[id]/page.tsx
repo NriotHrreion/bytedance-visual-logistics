@@ -98,7 +98,9 @@ export default function OrderPage() {
             );
           })}
         </Timeline>
-        <OrderItem {...order} inOrderPage/>
+        <OrderItem
+          {...order}
+          receiveButton={order.status !== "pending" && order.status !== "received" && order.status !== "cancelled"}/>
       </div>
     </div>
   );
