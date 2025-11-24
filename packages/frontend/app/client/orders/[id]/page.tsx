@@ -26,8 +26,10 @@ export default function OrderPage() {
   const [codeCopied, setCodeCopied] = useState(false);
 
   const handleCopyClaimCode = async () => {
+    if(!order || !order.claimCode) return;
+    
     try {
-      await copyToClipboard("000-000-000");
+      await copyToClipboard(order.claimCode);
       setCodeCopied(true);
     } catch (e) {
       console.error(e);

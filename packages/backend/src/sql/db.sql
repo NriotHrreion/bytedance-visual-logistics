@@ -22,7 +22,8 @@ create table if not exists orders (
   created_at timestamp,
   status delivery_status not null,
   origin geo_location,
-  destination geo_location
+  destination geo_location,
+  receiver varchar(255)
 );
 
 create table if not exists delivery_paths (

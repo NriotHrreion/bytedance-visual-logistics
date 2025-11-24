@@ -1,6 +1,6 @@
 import type { OrderInfoDTO } from "types";
 import Link from "next/link";
-import { Ellipsis, PackageCheck, PackageMinus, PackageX, TruckElectric } from "lucide-react";
+import { Ellipsis, PackageCheck, PackageX, Trash2, TruckElectric } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,16 @@ import {
   DropdownMenuTrigger
 } from "./ui/dropdown-menu";
 
+interface OrderItemOptions {
+  detailsHref?: string
+  deliverButton?: boolean
+  receiveButton?: boolean
+  cancelButton?: boolean
+  deleteButton?: boolean
+  displayCurrentLocation?: boolean
+  displayClaimCode?: boolean
+}
+
 export function OrderItem({
   id,
   name,
@@ -30,14 +40,10 @@ export function OrderItem({
   deliverButton = false,
   receiveButton = false,
   cancelButton = false,
-  deleteButton = false
-}: OrderInfoDTO & {
-  detailsHref?: string
-  deliverButton?: boolean
-  receiveButton?: boolean
-  cancelButton?: boolean
-  deleteButton?: boolean
-}) {
+  deleteButton = false,
+  displayCurrentLocation = false,
+  displayClaimCode = false
+}: OrderInfoDTO & OrderItemOptions) {
   const { deliver, receive, cancel, delete: del } = useOrder(id);
 
   return (
@@ -49,7 +55,9 @@ export function OrderItem({
             className="mb-auto font-semibold hover:underline decoration-2 whitespace-nowrap text-ellipsis overflow-hidden">
             {name}
           </Link>
-          {currentLocation && <GeoLocationLabel className="text-sm whitespace-nowrap" location={currentLocation}/>}
+          {(currentLocation && displayCurrentLocation) && (
+            <GeoLocationLabel className="text-sm whitespace-nowrap" location={currentLocation}/>
+          )}
           <span
             className="text-sm text-muted-foreground"
             title={new Date(createdAt).toTimeString()}>
@@ -96,7 +104,7 @@ export function OrderItem({
           <HintContent>预计明天送达</HintContent>
         </Hint>
       )}
-      {claimCode && (
+      {(claimCode && displayClaimCode) && (
         <Hint variant="success">
           <PackageCheck size={17}/>
           <HintContent>已送达 - 取件码 <span className="font-semibold">{claimCode}</span></HintContent>
@@ -108,6 +116,38 @@ export function OrderItem({
           <GeoLocationLabel location={destination}/>
         </span>
         <div className="flex items-center gap-2">
+          {(cancelButton || deleteButton) && (
+            <DropdownMenu modal={false}>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon-sm">
+                  <Ellipsis />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuGroup>
+                  <DropdownMenuItem
+                    onClick={() => {
+                      cancel();
+                      window.location.reload();
+                    }}>
+                    <PackageX />
+                    取消订单
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    variant="destructive"
+                    onClick={() => {
+                      del();
+                      window.location.reload();
+                    }}>
+                    <Trash2 />
+                    删除订单
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
           {detailsHref && (
             <Button
               variant="outline"
@@ -133,38 +173,6 @@ export function OrderItem({
             }}>
               确认收货
             </Button>
-          )}
-          {(cancelButton || deleteButton) && (
-            <DropdownMenu modal={false}>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon-sm">
-                  <Ellipsis />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start">
-                <DropdownMenuGroup>
-                  <DropdownMenuItem
-                    onClick={() => {
-                      cancel();
-                      window.location.reload();
-                    }}>
-                    <PackageMinus />
-                    取消订单
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    variant="destructive"
-                    onClick={() => {
-                      del();
-                      window.location.reload();
-                    }}>
-                    <PackageX />
-                    删除订单
-                  </DropdownMenuItem>
-                </DropdownMenuGroup>
-              </DropdownMenuContent>
-            </DropdownMenu>
           )}
         </div>
       </div>

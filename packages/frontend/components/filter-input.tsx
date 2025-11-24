@@ -1,6 +1,6 @@
 "use client";
 
-import type { SetItem, SetState } from "@/lib/types";
+import type { ItemOfSet, SetState } from "@/lib/types";
 import { useMemo, useState } from "react";
 import { ListFilter, Package } from "lucide-react";
 import {
@@ -66,7 +66,7 @@ export function FilterInput<F extends FiltersType>({
   placeholder?: string
   className?: string
 }) {
-  function addFilter<I extends keyof F>(id: I, value: SetItem<F[I]>) {
+  function addFilter<I extends keyof F>(id: I, value: ItemOfSet<F[I]>) {
     setFilters((prev) => {
       const next = { ...prev, [id]: new Set(prev[id]) } as F;
       next[id].add(value);
@@ -74,7 +74,7 @@ export function FilterInput<F extends FiltersType>({
     });
   }
 
-  function removeFilter<I extends keyof F>(id: I, value: SetItem<F[I]>) {
+  function removeFilter<I extends keyof F>(id: I, value: ItemOfSet<F[I]>) {
     setFilters((prev) => {
       const next = { ...prev, [id]: new Set(prev[id]) } as F;
       next[id].delete(value);

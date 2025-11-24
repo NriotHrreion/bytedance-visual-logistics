@@ -1,4 +1,4 @@
-INSERT INTO orders (id, name, price, created_at, status, origin, destination) VALUES
+INSERT INTO orders (id, name, price, created_at, status, origin, destination, receiver) VALUES
   (
     'eBdC32',
     'iPhone 17 Pro Max 2TB',
@@ -6,7 +6,8 @@ INSERT INTO orders (id, name, price, created_at, status, origin, destination) VA
     '2025-11-18 00:00:00',
     'pending',
     ROW(118.78221974, 32.07915573),
-    ROW(120.72816841, 30.75408188)
+    ROW(120.72816841, 30.75408188),
+    '李华'
   ),
   (
     'rAdC12',
@@ -15,7 +16,8 @@ INSERT INTO orders (id, name, price, created_at, status, origin, destination) VA
     '2025-11-17 00:00:00',
     'delivering',
     ROW(118.78221974, 32.07915573),
-    ROW(120.72816841, 30.75408188)
+    ROW(120.72816841, 30.75408188),
+    '李华'
   ),
   (
     'RktE73',
@@ -24,7 +26,8 @@ INSERT INTO orders (id, name, price, created_at, status, origin, destination) VA
     '2025-11-17 00:00:00',
     'delivered',
     ROW(121.42653336, 29.86982248),
-    ROW(120.72816841, 30.75408188)
+    ROW(120.72816841, 30.75408188),
+    '李华'
   ),
   (
     'bS2rQ5',
@@ -33,7 +36,8 @@ INSERT INTO orders (id, name, price, created_at, status, origin, destination) VA
     '2025-11-17 00:00:00',
     'received',
     ROW(121.42653336, 29.86982248),
-    ROW(120.72816841, 30.75408188)
+    ROW(120.72816841, 30.75408188),
+    '李华'
   ),
   (
     'e4Tr89',
@@ -42,6 +46,7 @@ INSERT INTO orders (id, name, price, created_at, status, origin, destination) VA
     '2025-11-17 00:00:00',
     'cancelled',
     ROW(121.42653336, 29.86982248),
-    ROW(120.72816841, 30.75408188)
+    ROW(120.72816841, 30.75408188),
+    '李华'
   )
 ON CONFLICT (id) DO NOTHING;

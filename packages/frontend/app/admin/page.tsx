@@ -1,7 +1,7 @@
 "use client";
 
 import type { DeliveryStatus } from "types";
-import { PackagePlus } from "lucide-react";
+import { PackagePlus, Store } from "lucide-react";
 import { Header, HeaderTitle } from "@/components/ui/header";
 import {
   FilterInput,
@@ -40,7 +40,7 @@ export default function AdminPage() {
   const { searchValue, filters, ...filterInput } = useFilterInput(filterDefs);
 
   return (
-    <div className="px-[20%]">
+    <div>
       <Header>
         <HeaderTitle>订单管理</HeaderTitle>
         <div className="flex gap-2">
@@ -49,6 +49,10 @@ export default function AdminPage() {
             searchValue={searchValue}
             filters={filters}
             {...filterInput}/>
+          <Button variant="outline">
+            <Store />
+            店铺信息
+          </Button>
           <CreateOrderDialog asChild>
             <Button>
               <PackagePlus />

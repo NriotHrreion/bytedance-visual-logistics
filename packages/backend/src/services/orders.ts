@@ -15,7 +15,8 @@ export class OrdersService {
       createdAt: new Date(row.created_at).getTime(),
       status: row.status,
       origin: deserializeGeoLocation(row.origin),
-      destination: deserializeGeoLocation(row.destination)
+      destination: deserializeGeoLocation(row.destination),
+      receiver: row.receiver
     };
   }
 
@@ -34,8 +35,8 @@ export class OrdersService {
 
   async createOrder(order: OrderSubmissionDTO): Promise<string> {
     const result = await db.query(
-      "insert into orders (id, name, price, created_at, status, origin, destination) values ($1, $2, $3, to_timestamp($4 / 1000.0), $5, $6, $7);",
-      [generateRandomString(12), order.name, order.price, Date.now(), "pending", serializeGeoLocation(order.origin), serializeGeoLocation(order.destination)]
+      "insert into orders (id, name, price, created_at, status, origin, destination, receiver) values ($1, $2, $3, to_timestamp($4 / 1000.0), $5, $6, $7, $8);",
+      [generateRandomString(12), order.name, order.price, Date.now(), "pending", serializeGeoLocation(order.origin), serializeGeoLocation(order.destination), order.receiver]
     );
     return result.rows[0].id;
   }

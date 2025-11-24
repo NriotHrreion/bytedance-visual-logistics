@@ -1,10 +1,13 @@
 "use client";
 
-import { useState, type PropsWithChildren } from "react";
+import type { GeoLocation, OrderSubmissionDTO } from "types";
+import { useEffect, useState, type PropsWithChildren } from "react";
 import dynamic from "next/dynamic";
+import { MapPin } from "lucide-react";
 import z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import {
   Dialog,
   DialogClose,
@@ -16,16 +19,30 @@ import {
   DialogTrigger
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormItemInfo,
+  FormLabel,
+  FormMessage
+} from "@/components/ui/form";
+import {
+  Field,
+  FieldLabel
+} from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { InputGroup, InputGroupAddon, InputGroupInput, InputGroupText } from "@/components/ui/input-group";
+import { backendAPI } from "@/lib/global";
+import { getLocationName } from "@/lib/amap-api";
 
 const AMapContainer = dynamic(() => import("@/components/amap-container"), { ssr: false });
 
 const formSchema = z.object({
-  name: z.string().nonempty(),
-  price: z.number().nonnegative().nonoptional(),
-  origin: z.array(z.number()).length(2),
-  destination: z.array(z.number()).length(2)
+  name: z.string().nonempty({ message: "订单名称不能为空" }),
+  price: z.number({ error: "请输入价格" }).nonnegative({ error: "价格不能为负" }).nonoptional(),
+  receiver: z.string().optional()
 });
 
 export function CreateOrderDialog({
@@ -35,24 +52,41 @@ export function CreateOrderDialog({
   asChild?: boolean
 }) {
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
+  const [destination, setDestination] = useState<GeoLocation | null>(null);
+  const [destinationName, setDestinationName] = useState<string>("");
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
       price: 0,
-      origin: [0, 0],
-      destination: [0, 0]
+      receiver: ""
     }
   });
 
   const handleSubmit = async (values: z.infer<typeof formSchema>) => {
-    
+    try {
+      await backendAPI.post("/orders", {
+        ...values,
+        origin: [118.796877, 32.060255],
+        destination
+      } as OrderSubmissionDTO);
+      toast.success("订单创建成功");
+      setDialogOpen(false);
+    } catch (e: any) {
+      toast.error("创建订单失败：" + e.message);
+    }
   };
+
+  useEffect(() => {
+    if(!destination) return;
+
+    getLocationName(destination).then(setDestinationName);
+  }, [destination]);
 
   return (
     <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
       <DialogTrigger asChild={asChild}>{children}</DialogTrigger>
-      <DialogContent className="min-w-[60vw] p-0 flex overflow-hidden">
+      <DialogContent className="min-w-[55vw] p-0 flex overflow-hidden">
         <div className="p-6 pr-4 flex-1 flex flex-col gap-4">
           <DialogHeader>
             <DialogTitle>创建订单</DialogTitle>
@@ -67,8 +101,11 @@ export function CreateOrderDialog({
                   control={form.control}
                   name="name"
                   render={({ field }) => (
-                    <FormItem className="flex-3">
-                      <FormLabel>订单名称</FormLabel>
+                    <FormItem className="flex-2">
+                      <FormItemInfo>
+                        <FormLabel required>订单名称</FormLabel>
+                        <FormMessage />
+                      </FormItemInfo>
                       <FormControl>
                         <Input
                           placeholder="请输入订单名称..."
@@ -80,43 +117,62 @@ export function CreateOrderDialog({
                 <FormField
                   control={form.control}
                   name="price"
-                  render={({ field }) => (
-                    <FormItem className="flex-1">
-                      <FormLabel>价格</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          autoComplete="off"
-                          {...field}/>
-                      </FormControl>
-                    </FormItem>
-                  )}/>
+                  render={({ field }) => {
+                    const { value, onChange, ...props } = field;
+                    return (
+                      <FormItem className="flex-1">
+                        <FormItemInfo>
+                          <FormLabel required>价格</FormLabel>
+                          <FormMessage />
+                        </FormItemInfo>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            autoComplete="off"
+                            value={isNaN(value) ? "" : value}
+                            onChange={(e) => onChange(e.target.valueAsNumber)}
+                            {...props}/>
+                        </FormControl>
+                      </FormItem>
+                    );
+                  }}/>
               </div>
+              <Field>
+                <FieldLabel>发出地</FieldLabel>
+                <div className="flex items-center gap-2">
+                  <MapPin size={17} stroke="var(--color-muted-foreground)"/>
+                  <span className="text-sm">
+                    江苏省 南京市 玄武区
+                  </span>
+                </div>
+              </Field>
+              <Field>
+                <FieldLabel required>收货地</FieldLabel>
+                <InputGroup>
+                  <InputGroupAddon>
+                    <MapPin />
+                  </InputGroupAddon>
+                  <InputGroupInput
+                    value={destinationName}
+                    className="opacity-100!"
+                    disabled
+                    autoComplete="off"/>
+                  <InputGroupText className="mr-3">
+                    点击地图选择
+                  </InputGroupText>
+                </InputGroup>
+              </Field>
               <FormField
                 control={form.control}
-                name="origin"
+                name="receiver"
                 render={({ field }) => (
-                  <FormItem className="flex-1">
-                    <FormLabel>发出地</FormLabel>
+                  <FormItem>
+                    <FormLabel>收货人</FormLabel>
                     <FormControl>
                       <Input
-                        value="江苏省 南京市 玄武区"
-                        disabled
-                        autoComplete="off"/>
-                    </FormControl>
-                  </FormItem>
-                )}/>
-              <FormField
-                control={form.control}
-                name="destination"
-                render={({ field }) => (
-                  <FormItem className="flex-1">
-                    <FormLabel>收货地</FormLabel>
-                    <FormControl>
-                      <Input
-                        value=""
-                        disabled
-                        autoComplete="off"/>
+                        placeholder="请输入收货人姓名..."
+                        autoComplete="off"
+                        {...field}/>
                     </FormControl>
                   </FormItem>
                 )}/>
@@ -126,12 +182,17 @@ export function CreateOrderDialog({
             <DialogClose asChild>
               <Button variant="outline">取消</Button>
             </DialogClose>
-            <Button>
+            <Button onClick={() => form.handleSubmit(handleSubmit)()}>
               创建
             </Button>
           </DialogFooter>
         </div>
-        <AMapContainer width={450}/>
+        <div className="min-w-[420px] border-l *:h-full">
+          <AMapContainer
+            width={420}
+            markable
+            onMark={(location) => setDestination(location)}/>
+        </div>
       </DialogContent>
     </Dialog>
   );

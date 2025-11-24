@@ -19,6 +19,7 @@ export interface Order {
   status: DeliveryStatus
   origin: GeoLocation
   destination: GeoLocation
+  receiver: string
 }
 
 export type OrderInfoDTO = Order & {
