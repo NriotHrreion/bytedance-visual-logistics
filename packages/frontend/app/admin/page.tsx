@@ -16,6 +16,7 @@ import { searchStringCompare } from "@/lib/search";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { CreateOrderDialog } from "./create-order-dialog";
+import { StoreInfoDialog } from "./store-info-dialog";
 
 interface OrderFilters extends FiltersType {
   status: Set<DeliveryStatus>
@@ -49,10 +50,12 @@ export default function AdminPage() {
             searchValue={searchValue}
             filters={filters}
             {...filterInput}/>
-          <Button variant="outline">
-            <Store />
-            店铺信息
-          </Button>
+          <StoreInfoDialog asChild>
+            <Button variant="outline">
+              <Store />
+              店铺信息
+            </Button>
+          </StoreInfoDialog>
           <CreateOrderDialog asChild>
             <Button>
               <PackagePlus />

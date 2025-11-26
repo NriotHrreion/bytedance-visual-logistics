@@ -1,4 +1,5 @@
 import "@amap/amap-jsapi-types";
+import type { PromiseType } from "@/lib/types";
 import type { GeoLocation } from "types";
 import { useEffect, useRef } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
@@ -8,7 +9,7 @@ import { amapAPIKey } from "@/lib/global";
 export default function AMapContainer({
   width,
   height,
-  location = [116.397428, 39.90923],
+  location,
   zoom = 10,
   markable = false,
   onMark
@@ -21,47 +22,55 @@ export default function AMapContainer({
   onMark?: (location: GeoLocation) => void
 }) {
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const instanceRef = useRef<PromiseType<ReturnType<typeof AMapLoader.load>>>(null);
   const mapRef = useRef<AMap.Map | null>(null);
   const markerRef = useRef<AMap.Marker | null>(null);
 
+  function putMarker(at: GeoLocation) {
+    if(!instanceRef.current || !mapRef.current) return;
+
+    if(markerRef.current) {
+      markerRef.current.setPosition(at);
+      return;
+    }
+
+    markerRef.current = new instanceRef.current.Marker({
+      position: at,
+      content: renderToStaticMarkup(
+        <div>
+          <img
+            width={26}
+            height={60}
+            src="//a.amap.com/jsapi_demos/static/demo-center/icons/poi-marker-red.png"
+            alt="amap-marker"/>
+        </div>
+      ),
+      offset: new instanceRef.current.Pixel(-13, -30),
+    });
+    mapRef.current.add(markerRef.current);
+  }
+
   const initMap = async () => {
     try {
-      const amap = await AMapLoader.load({
+      instanceRef.current = await AMapLoader.load({
         key: amapAPIKey,
         version: "2.0",
         plugins: ["AMap.Scale"]
       });
 
-      mapRef.current = new amap.Map(containerRef.current, {
+      mapRef.current = new instanceRef.current.Map(containerRef.current, {
         viewMode: "3D",
         zoom,
-        center: location
+        center: location ?? [116.397428, 39.90923] // 北京市
       });
 
       if(markable) {
+        if(location) putMarker(location);
+
         mapRef.current.on("click", (e) => {
           const markedLocation: GeoLocation = [e.lnglat.lng, e.lnglat.lat];
           onMark && onMark(markedLocation);
-
-          if(markerRef.current) {
-            markerRef.current.setPosition(markedLocation);
-            return;
-          }
-
-          markerRef.current = new amap.Marker({
-            position: markedLocation,
-            content: renderToStaticMarkup(
-              <div>
-                <img
-                  width={26}
-                  height={60}
-                  src="//a.amap.com/jsapi_demos/static/demo-center/icons/poi-marker-red.png"
-                  alt="amap-marker"/>
-              </div>
-            ),
-            offset: new amap.Pixel(-13, -30),
-          });
-          mapRef.current?.add(markerRef.current);
+          putMarker(markedLocation);
         });
       }
     } catch (e) {

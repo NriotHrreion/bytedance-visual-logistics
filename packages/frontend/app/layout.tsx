@@ -12,8 +12,11 @@ export default function RootLayout({
   return (
     <html lang="zh-cn">
       <body className={cn(notoSansSC.className, "antialiased")}>
+        <Toaster
+          position="bottom-right"
+          expand
+          richColors/>
         {children}
-        <Toaster />
       </body>
     </html>
   );

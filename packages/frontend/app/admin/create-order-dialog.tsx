@@ -1,7 +1,7 @@
 "use client";
 
-import type { GeoLocation, OrderSubmissionDTO } from "types";
-import { useEffect, useState, type PropsWithChildren } from "react";
+import type { OrderSubmissionDTO } from "types";
+import { useState, type PropsWithChildren } from "react";
 import dynamic from "next/dynamic";
 import { MapPin } from "lucide-react";
 import z from "zod";
@@ -33,9 +33,16 @@ import {
   FieldLabel
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { InputGroup, InputGroupAddon, InputGroupInput, InputGroupText } from "@/components/ui/input-group";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+  InputGroupText
+} from "@/components/ui/input-group";
 import { backendAPI } from "@/lib/global";
-import { getLocationName } from "@/lib/amap-api";
+import { getStorageValue } from "@/lib/storage";
+import { useLocationName } from "@/hooks/use-location-name";
+import { GeoLocationLabel } from "@/components/geolocation-label";
 
 const AMapContainer = dynamic(() => import("@/components/amap-container"), { ssr: false });
 
@@ -52,8 +59,7 @@ export function CreateOrderDialog({
   asChild?: boolean
 }) {
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
-  const [destination, setDestination] = useState<GeoLocation | null>(null);
-  const [destinationName, setDestinationName] = useState<string>("");
+  const { location: destination, setLocation: setDestination, locationName: destinationName } = useLocationName(null);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -67,7 +73,7 @@ export function CreateOrderDialog({
     try {
       await backendAPI.post("/orders", {
         ...values,
-        origin: [118.796877, 32.060255],
+        origin: getStorageValue("store-location"),
         destination
       } as OrderSubmissionDTO);
       toast.success("订单创建成功");
@@ -76,12 +82,6 @@ export function CreateOrderDialog({
       toast.error("创建订单失败：" + e.message);
     }
   };
-
-  useEffect(() => {
-    if(!destination) return;
-
-    getLocationName(destination).then(setDestinationName);
-  }, [destination]);
 
   return (
     <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -138,12 +138,16 @@ export function CreateOrderDialog({
                   }}/>
               </div>
               <Field>
-                <FieldLabel>发出地</FieldLabel>
+                <FieldLabel>发货地</FieldLabel>
                 <div className="flex items-center gap-2">
                   <MapPin size={17} stroke="var(--color-muted-foreground)"/>
-                  <span className="text-sm">
-                    江苏省 南京市 玄武区
-                  </span>
+                  <GeoLocationLabel
+                    className="text-sm"
+                    location={(
+                      typeof window !== "undefined"
+                      ? getStorageValue("store-location")
+                      : null
+                    )}/>
                 </div>
               </Field>
               <Field>
@@ -191,7 +195,7 @@ export function CreateOrderDialog({
           <AMapContainer
             width={420}
             markable
-            onMark={(location) => setDestination(location)}/>
+            onMark={(e) => setDestination(e)}/>
         </div>
       </DialogContent>
     </Dialog>
