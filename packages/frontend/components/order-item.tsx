@@ -25,6 +25,7 @@ interface OrderItemOptions {
   deleteButton?: boolean
   displayCurrentLocation?: boolean
   displayClaimCode?: boolean
+  onChange?: () => void
 }
 
 export function OrderItem({
@@ -42,7 +43,8 @@ export function OrderItem({
   cancelButton = false,
   deleteButton = false,
   displayCurrentLocation = false,
-  displayClaimCode = false
+  displayClaimCode = false,
+  onChange
 }: OrderInfoDTO & OrderItemOptions) {
   const { deliver, receive, cancel, delete: del } = useOrder(id);
 
@@ -128,18 +130,18 @@ export function OrderItem({
               <DropdownMenuContent align="end">
                 <DropdownMenuGroup>
                   <DropdownMenuItem
-                    onClick={() => {
-                      cancel();
-                      window.location.reload();
+                    onClick={async () => {
+                      await cancel();
+                      onChange && onChange();
                     }}>
                     <PackageX />
                     取消订单
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     variant="destructive"
-                    onClick={() => {
-                      del();
-                      window.location.reload();
+                    onClick={async () => {
+                      await del();
+                      onChange && onChange();
                     }}>
                     <Trash2 />
                     删除订单
@@ -159,17 +161,17 @@ export function OrderItem({
             </Button>
           )}
           {deliverButton && (
-            <Button size="xs" onClick={() => {
-              deliver();
-              window.location.reload();
+            <Button size="xs" onClick={async () => {
+              await deliver();
+              onChange && onChange();
             }}>
               物流发货
             </Button>
           )}
           {receiveButton && (
-            <Button size="xs" onClick={() => {
-              receive();
-              window.location.reload();
+            <Button size="xs" onClick={async () => {
+              await receive();
+              onChange && onChange();
             }}>
               确认收货
             </Button>

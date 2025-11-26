@@ -3,8 +3,10 @@ import useSWR from "swr";
 import { backendAPI } from "@/lib/global";
 
 export function useOrders() {
-  const { data, error, isLoading } = useSWR("/orders", async () => {
+  const { data, error, isLoading, mutate } = useSWR("/orders", async () => {
     return (await backendAPI.get("/orders")).data;
+  }, {
+    
   });
 
   return {
@@ -22,6 +24,7 @@ export function useOrders() {
     },
     delete(id: string) {
       return backendAPI.delete(`/orders/${id}`);
-    }
+    },
+    mutate
   };
 }

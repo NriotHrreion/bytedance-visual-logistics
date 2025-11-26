@@ -54,9 +54,11 @@ const formSchema = z.object({
 
 export function CreateOrderDialog({
   children,
-  asChild
+  asChild,
+  onCreate
 }: PropsWithChildren & {
   asChild?: boolean
+  onCreate?: () => void
 }) {
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
   const { location: destination, setLocation: setDestination, locationName: destinationName } = useLocationName(null);
@@ -70,6 +72,11 @@ export function CreateOrderDialog({
   });
 
   const handleSubmit = async (values: z.infer<typeof formSchema>) => {
+    if(!destination) {
+      toast.error("请设置收货地");
+      return;
+    }
+
     try {
       await backendAPI.post("/orders", {
         ...values,
@@ -78,6 +85,7 @@ export function CreateOrderDialog({
       } as OrderSubmissionDTO);
       toast.success("订单创建成功");
       setDialogOpen(false);
+      onCreate && onCreate();
     } catch (e: any) {
       toast.error("创建订单失败：" + e.message);
     }

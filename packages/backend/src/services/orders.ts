@@ -34,11 +34,12 @@ export class OrdersService {
   }
 
   async createOrder(order: OrderSubmissionDTO): Promise<string> {
-    const result = await db.query(
+    const id = generateRandomString(12);
+    await db.query(
       "insert into orders (id, name, price, created_at, status, origin, destination, receiver) values ($1, $2, $3, to_timestamp($4 / 1000.0), $5, $6, $7, $8);",
-      [generateRandomString(12), order.name, order.price, Date.now(), "pending", serializeGeoLocation(order.origin), serializeGeoLocation(order.destination), order.receiver]
+      [id, order.name, order.price, Date.now(), "pending", serializeGeoLocation(order.origin), serializeGeoLocation(order.destination), order.receiver]
     );
-    return result.rows[0].id;
+    return id;
   }
 
   async deleteOrder(id: string) {

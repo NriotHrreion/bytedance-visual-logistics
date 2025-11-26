@@ -37,7 +37,7 @@ const filterDefs: FilterDefs<OrderFilters> = [
 ];
 
 export default function AdminPage() {
-  const { orders, isLoading } = useOrders();
+  const { orders, isLoading, mutate } = useOrders();
   const { searchValue, filters, ...filterInput } = useFilterInput(filterDefs);
 
   return (
@@ -56,7 +56,9 @@ export default function AdminPage() {
               店铺信息
             </Button>
           </StoreInfoDialog>
-          <CreateOrderDialog asChild>
+          <CreateOrderDialog
+            onCreate={() => mutate()}
+            asChild>
             <Button>
               <PackagePlus />
               创建订单
@@ -94,6 +96,7 @@ export default function AdminPage() {
                   deliverButton={order.status === "pending"}
                   cancelButton
                   deleteButton
+                  onChange={() => mutate()}
                   key={order.id}/>
               ))
           )

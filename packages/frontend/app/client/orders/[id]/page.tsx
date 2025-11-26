@@ -55,14 +55,6 @@ export default function OrderPage() {
       {latestRoute && <AMapContainer height={450} location={latestRoute.location}/>}
       <div className="px-8 max-sm:px-4">
         <Timeline className="mx-3 py-6" reverse>
-          <TimelineItem>
-            <TimelineItemHeader>
-              <TimelineItemTitle>订单已创建</TimelineItemTitle>
-              <TimelineItemTime time={new Date(order.createdAt)}/>
-            </TimelineItemHeader>
-            {order.status === "pending" && <TimelineItemContent>待发货</TimelineItemContent>}
-          </TimelineItem>
-
           {paths.map(({ time, location, action, claimCode }, i) => {
             const isLast = i === paths.length - 1;
             const isDelivered = order.status === "delivered";

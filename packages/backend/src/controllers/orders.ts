@@ -50,6 +50,10 @@ export class OrdersController extends Controller {
   async createOrder(req: Request, res: Response) {
     const submittedOrder: OrderSubmissionDTO = req.body;
     const newOrderId: string = await this.ordersService.createOrder(submittedOrder);
+    await this.pathsService.pushDeliveryPath(newOrderId, {
+      location: submittedOrder.origin,
+      action: "订单已创建"
+    });
     this.sendResponse(res, { id: newOrderId });
   }
 
