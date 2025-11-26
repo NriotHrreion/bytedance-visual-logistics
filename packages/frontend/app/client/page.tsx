@@ -15,7 +15,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { Header, HeaderTitle } from "@/components/ui/header";
 
 export default function ClientPage() {
-  const { orders, isLoading } = useOrders();
+  const { orders, isLoading, mutate } = useOrders();
   const [searchValue, setSearchValue] = useState("");
 
   return (
@@ -64,6 +64,7 @@ export default function ClientPage() {
                   detailsHref={`/client/orders/${order.id}`}
                   receiveButton={order.status !== "pending" && order.status !== "received" && order.status !== "cancelled"}
                   displayClaimCode
+                  onChange={() => mutate()}
                   key={order.id}/>
               ))
           )
