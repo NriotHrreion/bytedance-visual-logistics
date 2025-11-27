@@ -21,7 +21,7 @@ const AMapContainer = dynamic(() => import("@/components/amap-container"), { ssr
 
 export default function OrderPage() {
   const { id } = useParams<{ id: string }>();
-  const { order } = useOrder(id);
+  const { order, mutate } = useOrder(id);
   const { paths } = useDeliveryPaths(id);
   const [codeCopied, setCodeCopied] = useState(false);
 
@@ -94,7 +94,8 @@ export default function OrderPage() {
         </Timeline>
         <OrderItem
           {...order}
-          receiveButton={order.status !== "pending" && order.status !== "received" && order.status !== "cancelled"}/>
+          receiveButton={order.status !== "pending" && order.status !== "received" && order.status !== "cancelled"}
+          onChange={() => mutate()}/>
       </div>
     </div>
   );

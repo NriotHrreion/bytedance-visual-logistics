@@ -4,7 +4,7 @@ export default function AdminLayout({
   children: React.ReactNode
 }) {
   return (
-    <main className="px-[20%]">
+    <main>
       {children}
     </main>
   );

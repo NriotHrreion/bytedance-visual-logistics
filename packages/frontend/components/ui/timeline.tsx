@@ -13,7 +13,7 @@ export function Timeline({
       data-slot="timeline"
       className={cn(
         "flex gap-6 border-l-2 border-dashed",
-        reverse ? "flex-col-reverse" : "flex-col",
+        reverse ? "flex-col-reverse justify-end" : "flex-col",
         className
       )}
       {...props}/>

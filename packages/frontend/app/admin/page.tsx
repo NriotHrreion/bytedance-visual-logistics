@@ -41,7 +41,7 @@ export default function AdminPage() {
   const { searchValue, filters, ...filterInput } = useFilterInput(filterDefs);
 
   return (
-    <div>
+    <div className="px-[20%]">
       <Header>
         <HeaderTitle>订单管理</HeaderTitle>
         <div className="flex gap-2">
