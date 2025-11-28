@@ -19,10 +19,11 @@ create table if not exists orders (
   id varchar(12) unique not null,
   name varchar(255) not null,
   price decimal(10, 2) not null,
-  created_at timestamp,
+  created_at timestamp not null,
   status delivery_status not null,
-  origin geo_location,
-  destination geo_location,
+  origin geo_location not null,
+  destination geo_location not null,
+  current geo_location not null,
   receiver varchar(255)
 );
 
@@ -31,8 +32,8 @@ create table if not exists delivery_paths (
 
   order_id varchar(12) not null,
   time timestamp not null,
-  location geo_location,
-  action varchar(255),
+  location geo_location not null,
+  action varchar(255) not null,
   claim_code varchar(20),
 
   unique (order_id, time),
@@ -40,3 +41,16 @@ create table if not exists delivery_paths (
 );
 
 create index if not exists idx_delivery_paths_order_index on delivery_paths(order_id, time);
+
+create table if not exists route_points (
+  key serial primary key,
+  
+  order_id varchar(12) not null,
+  sequence_number integer not null,
+  location geo_location not null,
+  
+  unique (order_id, sequence_number),
+  foreign key (order_id) references orders(id) on delete cascade
+);
+
+create index if not exists idx_route_points_order_id on route_points(order_id);

@@ -1,14 +1,19 @@
 import { styleText } from "node:util";
+import http from "http";
 import dotenv from "dotenv";
 import express from "express";
 import cors from "cors";
+import ws from "ws";
 import { OrdersController } from "./controllers/orders";
 import { PathsController } from "./controllers/paths";
+import { PointsEndpoint } from "./endpoints/points";
 
 dotenv.config({ quiet: true });
 
 const PORT = process.env["BACKEND_PORT"];
 const app = express();
+const server = http.createServer(app);
+const wss = new ws.Server({ server });
 
 app.use(express.json());
 app.use(cors());
@@ -18,9 +23,13 @@ app.use((req, res, next) => {
   next();
 });
 
+// Controllers
 app.use("/v1/orders", new OrdersController().router);
 app.use("/v1/paths", new PathsController().router);
 
-app.listen(PORT, async () => {
+// Endpoints
+new PointsEndpoint(wss);
+
+server.listen(PORT, async () => {
   console.log(styleText("green", `Backend Server is ready on port ${PORT}.`));
 });

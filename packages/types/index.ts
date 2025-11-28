@@ -19,6 +19,7 @@ export interface Order {
   status: DeliveryStatus
   origin: GeoLocation
   destination: GeoLocation
+  current: GeoLocation
   receiver: string
 }
 
@@ -27,7 +28,7 @@ export type OrderInfoDTO = Order & {
   claimCode?: string
 }
 
-export type OrderSubmissionDTO = Omit<Order, "id" | "status" | "createdAt">;
+export type OrderSubmissionDTO = Omit<Order, "id" | "status" | "createdAt" | "current">;
 
 export type APIResponse<T> = T & {
   code: number

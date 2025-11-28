@@ -1,7 +1,7 @@
 import express, { Response, Router } from "express";
 import "reflect-metadata";
 
-const ROUTES_METADATA_KEY = Symbol("routes");
+const ROUTES_METADATA_KEY = Symbol("routes"); // RouteHandler[]
 
 interface RouteHandler {
   path: string

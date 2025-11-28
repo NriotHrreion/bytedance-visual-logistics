@@ -16,6 +16,7 @@ export class OrdersService {
       status: row.status,
       origin: deserializeGeoLocation(row.origin),
       destination: deserializeGeoLocation(row.destination),
+      current: deserializeGeoLocation(row.current),
       receiver: row.receiver
     };
   }
@@ -36,8 +37,8 @@ export class OrdersService {
   async createOrder(order: OrderSubmissionDTO): Promise<string> {
     const id = generateRandomString(12);
     await db.query(
-      "insert into orders (id, name, price, created_at, status, origin, destination, receiver) values ($1, $2, $3, to_timestamp($4 / 1000.0), $5, $6, $7, $8);",
-      [id, order.name, order.price, Date.now(), "pending", serializeGeoLocation(order.origin), serializeGeoLocation(order.destination), order.receiver]
+      "insert into orders (id, name, price, created_at, status, origin, destination, current, receiver) values ($1, $2, $3, to_timestamp($4 / 1000.0), $5, $6, $7, $8, $9);",
+      [id, order.name, order.price, Date.now(), "pending", serializeGeoLocation(order.origin), serializeGeoLocation(order.destination), serializeGeoLocation(order.origin), order.receiver]
     );
     return id;
   }
