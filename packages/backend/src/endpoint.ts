@@ -22,7 +22,9 @@ export type Session = ws.WebSocket & {
 };
 
 export abstract class Endpoint {
-  public constructor(public wss: ws.Server) { }
+  public wss: ws.Server;
+
+  public constructor(_wss: ws.Server) { }
 
   protected send<D>(session: ws.WebSocket, packet: MessagePacket<D>) {
     session.send(JSON.stringify(packet));
@@ -42,6 +44,8 @@ export function Connectable(route: string) {
         super(args);
 
         const wss: ws.Server = args[0];
+        (this as any as Endpoint).wss = wss;
+
         const onOpenMethod: string = Reflect.getMetadata(ON_OPEN_METADATA_KEY, constructor);
         const onMessageHandlers: MessageHandler[] = Reflect.getMetadata(ON_MESSAGE_METADATA_KEY, constructor);
         const onCloseMethod: string = Reflect.getMetadata(ON_CLOSE_METADATA_KEY, constructor);
@@ -49,15 +53,13 @@ export function Connectable(route: string) {
 
         wss.on("connection", (session, req) => {
           const routeParser = new RouteParser(route);
-          const params = routeParser.match(URL.parse(req.url).pathname);
+          const params = routeParser.match(req.url);
           if(!params) {
             session.close();
             return;
           }
 
-          session.on("open", () => {
-            this[onOpenMethod]({ ...session, params });
-          });
+          this[onOpenMethod]({ ...session, params });
 
           session.on("message", (msg: string) => {
             const packet = JSON.parse(msg) as MessagePacket<any>;

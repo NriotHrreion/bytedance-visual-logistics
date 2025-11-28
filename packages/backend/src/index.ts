@@ -1,14 +1,12 @@
 import { styleText } from "node:util";
 import http from "http";
-import dotenv from "dotenv";
 import express from "express";
 import cors from "cors";
 import ws from "ws";
 import { OrdersController } from "./controllers/orders";
 import { PathsController } from "./controllers/paths";
 import { PointsEndpoint } from "./endpoints/points";
-
-dotenv.config({ quiet: true });
+import "./env-config";
 
 const PORT = process.env["BACKEND_PORT"];
 const app = express();

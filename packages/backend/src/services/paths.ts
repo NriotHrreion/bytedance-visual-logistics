@@ -1,6 +1,6 @@
-import { DeliveryPath, DeliveryPathSubmissionDTO } from "types";
-import { db } from "../db";
-import { deserializeGeoLocation, serializeGeoLocation } from "../utils";
+import { DeliveryPath, DeliveryPathSubmissionDTO } from "shared";
+import { db } from "@/db";
+import { deserializeGeoLocation, serializeGeoLocation } from "@/utils";
 
 export class PathsService {
   async getPathsByOrderId(orderId: string): Promise<DeliveryPath[] | null> {

@@ -1,4 +1,4 @@
-import type { DeliveryPath } from "types";
+import type { DeliveryPath } from "shared";
 import useSWR from "swr";
 import { backendAPI } from "@/lib/global";
 

@@ -1,9 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { Pool } from "pg";
-import dotenv from "dotenv";
-
-dotenv.config({ quiet: true });
+import "./env-config";
 
 export const db = new Pool();
 

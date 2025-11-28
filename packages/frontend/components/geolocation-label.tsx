@@ -1,6 +1,6 @@
 "use client";
 
-import type { GeoLocation } from "types";
+import type { GeoLocation } from "shared";
 import useSWR from "swr";
 import { getLocationName } from "@/lib/amap-api";
 

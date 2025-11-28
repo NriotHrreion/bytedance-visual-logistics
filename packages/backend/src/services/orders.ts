@@ -1,10 +1,10 @@
-import { DeliveryStatus, Order, OrderSubmissionDTO } from "types";
-import { db } from "../db";
+import { DeliveryStatus, Order, OrderSubmissionDTO } from "shared";
+import { db } from "@/db";
 import {
   deserializeGeoLocation,
   generateRandomString,
   serializeGeoLocation,
-} from "../utils";
+} from "@/utils";
 
 export class OrdersService {
   private rowToOrder(row: any): Order {

@@ -8,9 +8,12 @@ importers:
 
   .:
     dependencies:
-      types:
+      axios:
+        specifier: ^1.13.2
+        version: 1.13.2
+      shared:
         specifier: workspace:*
-        version: link:packages/types
+        version: link:packages/shared
     devDependencies:
       eslint:
         specifier: ^9.39.1
@@ -67,6 +70,9 @@ importers:
       '@hookform/resolvers':
         specifier: ^5.2.2
         version: 5.2.2(react-hook-form@7.66.1(react@19.2.0))
+      '@next/env':
+        specifier: ^16.0.5
+        version: 16.0.5
       '@radix-ui/react-alert-dialog':
         specifier: ^1.1.15
         version: 1.1.15(@types/react-dom@19.2.3(@types/react@19.2.5))(@types/react@19.2.5)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
@@ -88,9 +94,6 @@ importers:
       '@tailwindcss/postcss':
         specifier: ^4.1.17
         version: 4.1.17
-      axios:
-        specifier: ^1.13.2
-        version: 1.13.2
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -156,7 +159,7 @@ importers:
         specifier: 5.9.3
         version: 5.9.3
 
-  packages/types: {}
+  packages/shared: {}
 
 packages:
 
@@ -478,6 +481,9 @@ packages:
 
   '@next/env@16.0.3':
     resolution: {integrity: sha512-IqgtY5Vwsm14mm/nmQaRMmywCU+yyMIYfk3/MHZ2ZTJvwVbBn3usZnjMi1GacrMVzVcAxJShTCpZlPs26EdEjQ==}
+
+  '@next/env@16.0.5':
+    resolution: {integrity: sha512-jRLOw822AE6aaIm9oh0NrauZEM0Vtx5xhYPgqx89txUmv/UmcRwpcXmGeQOvYNT/1bakUwA+nG5CA74upYVVDw==}
 
   '@next/eslint-plugin-next@16.0.3':
     resolution: {integrity: sha512-6sPWmZetzFWMsz7Dhuxsdmbu3fK+/AxKRtj7OB0/3OZAI2MHB/v2FeYh271LZ9abvnM1WIwWc/5umYjx0jo5sQ==}
@@ -3183,6 +3189,8 @@ snapshots:
     optional: true
 
   '@next/env@16.0.3': {}
+
+  '@next/env@16.0.5': {}
 
   '@next/eslint-plugin-next@16.0.3':
     dependencies:

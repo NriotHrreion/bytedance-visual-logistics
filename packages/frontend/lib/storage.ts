@@ -1,4 +1,4 @@
-import type { GeoLocation } from "types";
+import type { GeoLocation } from "shared";
 import { storageKey } from "./global";
 
 function getLocalStorage() {

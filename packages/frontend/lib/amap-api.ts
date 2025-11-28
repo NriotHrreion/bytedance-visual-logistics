@@ -1,5 +1,5 @@
-import type { GeoLocation } from "types";
-import { amapRestAPI, amapServiceKey } from "./global";
+import type { GeoLocation } from "shared";
+import { amapRestAPI, amapServiceKey } from "shared";
 
 export async function getLocationName(location: GeoLocation): Promise<string> {
   const { data: res } = await amapRestAPI.get(`/v3/geocode/regeo?key=${amapServiceKey}&location=${location.join(",")}`);

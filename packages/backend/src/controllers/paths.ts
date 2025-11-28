@@ -1,8 +1,8 @@
 import type { Request, Response } from "express";
-import type { DeliveryPathSubmissionDTO } from "types";
-import { Controller, Get, Post, Routable } from "../controller";
-import { OrdersService } from "../services/orders";
-import { PathsService } from "../services/paths";
+import type { DeliveryPathSubmissionDTO } from "shared";
+import { Controller, Get, Post, Routable } from "@/controller";
+import { OrdersService } from "@/services/orders";
+import { PathsService } from "@/services/paths";
 
 @Routable
 export class PathsController extends Controller {

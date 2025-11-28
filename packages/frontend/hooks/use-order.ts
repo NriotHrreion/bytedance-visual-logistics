@@ -1,4 +1,4 @@
-import type { OrderInfoDTO } from "types";
+import type { OrderInfoDTO } from "shared";
 import useSWR from "swr";
 import { backendAPI } from "@/lib/global";
 

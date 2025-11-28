@@ -1,4 +1,4 @@
-import type { OrderInfoDTO } from "types";
+import type { OrderInfoDTO } from "shared";
 import Link from "next/link";
 import { Ellipsis, PackageCheck, PackageX, Trash2, TruckElectric } from "lucide-react";
 import { Card } from "@/components/ui/card";

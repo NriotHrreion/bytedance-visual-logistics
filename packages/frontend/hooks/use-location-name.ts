@@ -1,4 +1,4 @@
-import type { GeoLocation } from "types";
+import type { GeoLocation } from "shared";
 import { useEffect, useState } from "react";
 import { getLocationName } from "@/lib/amap-api";
 

@@ -1,14 +1,17 @@
 import type { Request, Response } from "express";
-import type { OrderInfoDTO, OrderSubmissionDTO } from "types";
-import { Get, Post, Routable, Controller, Delete } from "../controller";
-import { OrdersService } from "../services/orders";
-import { PathsService } from "../services/paths";
-import { getRandom } from "../utils";
+import "@/env-config";
+import { amapServiceKey, amapRestAPI, GeoLocation, type OrderInfoDTO, type OrderSubmissionDTO } from "shared";
+import { Get, Post, Routable, Controller, Delete } from "@/controller";
+import { OrdersService } from "@/services/orders";
+import { PathsService } from "@/services/paths";
+import { PointsService } from "@/services/points";
+import { getRandom } from "@/utils";
 
 @Routable
 export class OrdersController extends Controller {
   private ordersService = new OrdersService();
   private pathsService = new PathsService();
+  private pointsService = new PointsService();
 
   @Get("/")
   async getOrderList(req: Request, res: Response) {
@@ -49,14 +52,23 @@ export class OrdersController extends Controller {
   @Post("/")
   async createOrder(req: Request, res: Response) {
     const submittedOrder: OrderSubmissionDTO = req.body;
+    const { origin, destination } = submittedOrder;
     const newOrderId: string = await this.ordersService.createOrder(submittedOrder);
     await this.pathsService.pushDeliveryPath(newOrderId, {
-      location: submittedOrder.origin,
+      location: origin,
       action: "订单已创建"
     });
     this.sendResponse(res, { id: newOrderId });
 
-    /** @todo */
+    /** @see https://lbs.amap.com/api/webservice/guide/api/direction#t6 */
+    const { data } = await amapRestAPI.get(`/v3/direction/driving?key=${amapServiceKey}&origin=${origin.join(",")}&destination=${destination.join(",")}&extensions=base`);
+    const steps = data.route.paths[0].steps;
+    const points: GeoLocation[] = [];
+    for(const step of steps) {
+      const polyline: string = step.polyline;
+      points.push(...polyline.split(";").map((str) => str.split(",").map(parseFloat)) as GeoLocation[]);
+    }
+    this.pointsService.storeMockRoute(newOrderId, points);
   }
 
   @Delete("/:id")

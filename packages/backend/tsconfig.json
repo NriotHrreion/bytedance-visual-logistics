@@ -20,7 +20,7 @@
     "emitDecoratorMetadata": true,
     "paths": {
       "@/*": [
-        "./*"
+        "./src/*"
       ]
     }
   },

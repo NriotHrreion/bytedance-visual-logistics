@@ -1,6 +1,6 @@
 "use client";
 
-import type { DeliveryStatus } from "types";
+import type { DeliveryStatus } from "shared";
 import { PackagePlus, Store } from "lucide-react";
 import { Header, HeaderTitle } from "@/components/ui/header";
 import {

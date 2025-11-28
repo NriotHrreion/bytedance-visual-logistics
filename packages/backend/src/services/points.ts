@@ -1,6 +1,6 @@
-import { GeoLocation } from "types";
-import { db } from "../db";
-import { serializeGeoLocation } from "../utils";
+import { GeoLocation } from "shared";
+import { db } from "@/db";
+import { serializeGeoLocation } from "@/utils";
 
 export class PointsService {
   async storeMockRoute(orderId: string, points: GeoLocation[]) {

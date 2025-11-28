@@ -1,6 +1,6 @@
 "use client";
 
-import type { OrderSubmissionDTO } from "types";
+import type { OrderSubmissionDTO } from "shared";
 import { useState, type PropsWithChildren } from "react";
 import dynamic from "next/dynamic";
 import { MapPin } from "lucide-react";

@@ -53,4 +53,4 @@ create table if not exists route_points (
   foreign key (order_id) references orders(id) on delete cascade
 );
 
-create index if not exists idx_route_points_order_id on route_points(order_id);
+create index if not exists idx_route_points_order_id on route_points(order_id, sequence_number);

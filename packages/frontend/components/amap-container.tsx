@@ -1,10 +1,9 @@
 import "@amap/amap-jsapi-types";
 import type { PromiseType } from "@/lib/types";
-import type { GeoLocation } from "types";
+import { amapAPIKey, type GeoLocation } from "shared";
 import { useEffect, useRef } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import AMapLoader from "@amap/amap-jsapi-loader";
-import { amapAPIKey } from "@/lib/global";
 
 export default function AMapContainer({
   width,
