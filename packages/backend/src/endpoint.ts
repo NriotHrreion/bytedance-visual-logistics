@@ -59,24 +59,26 @@ export function Connectable(route: string) {
             return;
           }
 
-          this[onOpenMethod]({ ...session, params });
+          const sessionWithParams: Session = Object.assign(session, { params });
+
+          this[onOpenMethod](sessionWithParams);
 
           session.on("message", (msg: string) => {
             const packet = JSON.parse(msg) as MessagePacket<any>;
             for(const { type, handlerName } of onMessageHandlers) {
               if(type === packet.type) {
-                this[handlerName]({ ...session, params }, packet.data);
+                this[handlerName](sessionWithParams, packet.data);
                 break;
               }
             }
           });
 
           session.on("close", () => {
-            this[onCloseMethod]({ ...session, params });
+            this[onCloseMethod](sessionWithParams);
           });
 
           session.on("error", (e) => {
-            this[onErrorMethod]({ ...session, params }, e);
+            this[onErrorMethod](sessionWithParams, e);
           });
         });
       }

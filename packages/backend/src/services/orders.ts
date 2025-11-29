@@ -1,4 +1,4 @@
-import { DeliveryStatus, Order, OrderSubmissionDTO } from "shared";
+import type { DeliveryStatus, GeoLocation, Order, OrderSubmissionDTO } from "shared";
 import { db } from "@/db";
 import {
   deserializeGeoLocation,
@@ -37,8 +37,8 @@ export class OrdersService {
   async createOrder(order: OrderSubmissionDTO): Promise<string> {
     const id = generateRandomString(12);
     await db.query(
-      "insert into orders (id, name, price, created_at, status, origin, destination, current, receiver) values ($1, $2, $3, to_timestamp($4 / 1000.0), $5, $6, $7, $8, $9);",
-      [id, order.name, order.price, Date.now(), "pending", serializeGeoLocation(order.origin), serializeGeoLocation(order.destination), serializeGeoLocation(order.origin), order.receiver]
+      "insert into orders (id, name, price, created_at, status, origin, destination, receiver, current, current_point_index) values ($1, $2, $3, to_timestamp($4 / 1000.0), $5, $6, $7, $8, $9, $10);",
+      [id, order.name, order.price, Date.now(), "pending", serializeGeoLocation(order.origin), serializeGeoLocation(order.destination), order.receiver, serializeGeoLocation(order.origin), 0]
     );
     return id;
   }
@@ -57,5 +57,15 @@ export class OrdersService {
 
   async updateOrderStatus(id: string, status: DeliveryStatus) {
     await db.query("update orders set status = $1 where id = $2;", [status, id]);
+  }
+
+  async getCurrentPointIndex(id: string): Promise<number> {
+    const result = await db.query("select current_point_index from orders where id = $1;", [id]);
+    return result.rows[0].current_point_index;
+  }
+
+  async updateOrderLocation(id: string, location: GeoLocation, currentPointIndex: number) {
+    await db.query("update orders set current = $1 where id = $2;", [serializeGeoLocation(location), id]);
+    await db.query("update orders set current_point_index = $1 where id = $2;", [currentPointIndex, id]);
   }
 }

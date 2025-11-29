@@ -1,6 +1,6 @@
-import { GeoLocation } from "shared";
+import type { GeoLocation } from "shared";
 import { db } from "@/db";
-import { serializeGeoLocation } from "@/utils";
+import { deserializeGeoLocation, serializeGeoLocation } from "@/utils";
 
 export class PointsService {
   async storeMockRoute(orderId: string, points: GeoLocation[]) {
@@ -22,9 +22,17 @@ export class PointsService {
   }
 
   async existsRoute(orderId: string) {
-    const points = await db.query("select * from route_points where order_id = $1;", [orderId]);
-    return points.rowCount !== 0;
+    const points = await db.query("select * from route_points where order_id = $1 limit 1;", [orderId]);
+    return points.rowCount === 1;
   }
 
-  /** @todo */
+  async readRoute(orderId: string): Promise<GeoLocation[]> {
+    const order = await db.query("select * from orders where id = $1;", [orderId]);
+    if(order.rows.length === 0) {
+      throw new Error("Cannot find the order");
+    }
+
+    const points = await db.query("select * from route_points where order_id = $1 order by sequence_number asc;", [orderId]);
+    return points.rows.map(({ location }) => deserializeGeoLocation(location));
+  }
 }

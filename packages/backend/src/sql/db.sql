@@ -23,8 +23,10 @@ create table if not exists orders (
   status delivery_status not null,
   origin geo_location not null,
   destination geo_location not null,
+  receiver varchar(255),
+
   current geo_location not null,
-  receiver varchar(255)
+  current_point_index integer not null
 );
 
 create table if not exists delivery_paths (

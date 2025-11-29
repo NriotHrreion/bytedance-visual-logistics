@@ -53,7 +53,7 @@ export function OrderItem({
       <div className="flex-1 flex gap-6">
         <div className="flex-1 min-w-0 flex flex-col gap-2 justify-between">
           <Link
-            href={`/client/orders/${id}`}
+            href={detailsHref}
             className="mb-auto font-semibold hover:underline decoration-2 whitespace-nowrap text-ellipsis overflow-hidden">
             {name}
           </Link>
