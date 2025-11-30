@@ -20,25 +20,22 @@ export class PointsEndpoint extends Endpoint {
   public constructor(wss: ws.Server) {
     super(wss);
 
-    this.init();
-  }
-
-  private async init() {
-    const orderIds = (await this.ordersService.getOrders()).map(({ id }) => id);
-    for(const orderId of orderIds) {
-      this.cachedRoutes.set(orderId, await this.pointsService.readRoute(orderId));
-    }
-
     setInterval(() => {
       this.updateCurrentLocation();
       this.broadcastCurrentLocation();
     }, UPDATE_INTERVAL_MS);
   }
 
-  private updateCurrentLocation() {
-    this.cachedRoutes.forEach(async (points, orderId) => {
+  private async updateCurrentLocation() {
+    const orderIds = (await this.ordersService.getOrders()).map(({ id }) => id);
+    orderIds.forEach(async (orderId) => {
       const orderStatus = await this.ordersService.getOrderStatus(orderId);
       if(orderStatus !== "delivering") return;
+
+      if(!this.cachedRoutes.has(orderId)) {
+        this.cachedRoutes.set(orderId, await this.pointsService.readRoute(orderId));
+      }
+      const points = this.cachedRoutes.get(orderId);
 
       const currentPointIndex = await this.ordersService.getCurrentPointIndex(orderId);
       const next = currentPointIndex + 1;
@@ -69,13 +66,19 @@ export class PointsEndpoint extends Endpoint {
   }
 
   @OnOpen
-  onOpen(session: Session) {
+  async onOpen(session: Session) {
     const orderId = session.params.id;
+    if(!(await this.ordersService.getOrderById(orderId))) {
+      session.close();
+      return;
+    }
 
     if(!this.sessionsMap.has(orderId)) {
       this.sessionsMap.set(orderId, new Set());
     }
     this.sessionsMap.get(orderId)?.add(session);
+
+    this.send(session, { type: "init", data: await this.pointsService.readRouteBeforeCurrentLocation(orderId) });
   }
 
   @OnClose

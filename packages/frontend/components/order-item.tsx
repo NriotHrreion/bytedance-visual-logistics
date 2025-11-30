@@ -52,11 +52,21 @@ export function OrderItem({
     <Card className="p-3 gap-2">
       <div className="flex-1 flex gap-6">
         <div className="flex-1 min-w-0 flex flex-col gap-2 justify-between">
-          <Link
-            href={detailsHref}
-            className="mb-auto font-semibold hover:underline decoration-2 whitespace-nowrap text-ellipsis overflow-hidden">
-            {name}
-          </Link>
+          {
+            detailsHref
+            ? (
+              <Link
+                href={detailsHref}
+                className="mb-auto font-semibold hover:underline decoration-2 whitespace-nowrap text-ellipsis overflow-hidden">
+                {name}
+              </Link>
+            )
+            : (
+              <span className="mb-auto font-semibold whitespace-nowrap text-ellipsis overflow-hidden">
+                {name}
+              </span>
+            )
+          }
           {(currentLocation && displayCurrentLocation) && (
             <GeoLocationLabel className="text-sm whitespace-nowrap" location={currentLocation}/>
           )}

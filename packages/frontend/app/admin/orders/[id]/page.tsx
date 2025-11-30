@@ -108,7 +108,6 @@ export default function OrderPage() {
           </div>
           <OrderItem
             {...order}
-            detailsHref={`/admin/orders/${order.id}`}
             deliverButton={order.status === "pending"}
             cancelButton
             deleteButton

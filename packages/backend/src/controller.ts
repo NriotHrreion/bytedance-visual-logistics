@@ -1,3 +1,4 @@
+import EventEmitter from "node:events";
 import express, { Response, Router } from "express";
 import "reflect-metadata";
 

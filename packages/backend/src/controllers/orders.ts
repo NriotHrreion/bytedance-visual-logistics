@@ -101,30 +101,6 @@ export class OrdersController extends Controller {
     this.sendOk(res);
   }
 
-  // @Post("/:id/delivered")
-  // async orderDelivered(req: Request, res: Response) {
-  //   const id = req.params.id;
-  //   const order = await this.ordersService.getOrderById(id);
-  //   if(!order) {
-  //     this.sendError(res, 404, "Cannot find the order");
-  //     return;
-  //   }
-
-  //   if(await this.ordersService.getOrderStatus(id) !== "delivering") {
-  //     this.sendError(res, 400, "The order is not in delivering status");
-  //     return;
-  //   }
-
-  //   await this.ordersService.updateOrderStatus(id, "delivered");
-
-  //   await this.pathsService.pushDeliveryPath(id, {
-  //     location: order.destination,
-  //     action: "已到货",
-  //     claimCode: `${getRandom(100, 999)}-${getRandom(100, 999)}-${getRandom(100, 999)}`
-  //   });
-  //   this.sendOk(res);
-  // }
-
   @Post("/:id/receive")
   async receiveOrder(req: Request, res: Response) {
     const id = req.params.id;
