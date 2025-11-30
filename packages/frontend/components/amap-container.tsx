@@ -1,5 +1,4 @@
 import "@amap/amap-jsapi-types";
-import type { PromiseType } from "@/lib/types";
 import { amapAPIKey, type GeoLocation } from "shared";
 import { useEffect, useRef } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
@@ -9,8 +8,9 @@ export default function AMapContainer({
   width,
   height,
   location,
-  zoom = 10,
+  zoom = 14,
   markable = false,
+  polyline = [],
   onMark
 }: {
   width?: number
@@ -18,12 +18,14 @@ export default function AMapContainer({
   location?: GeoLocation
   zoom?: number
   markable?: boolean
+  polyline?: GeoLocation[]
   onMark?: (location: GeoLocation) => void
 }) {
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const instanceRef = useRef<PromiseType<ReturnType<typeof AMapLoader.load>>>(null);
+  const instanceRef = useRef<typeof AMap | null>(null);
   const mapRef = useRef<AMap.Map | null>(null);
   const markerRef = useRef<AMap.Marker | null>(null);
+  const polylineRef = useRef<AMap.Polyline | null>(null);
 
   function putMarker(at: GeoLocation) {
     if(!instanceRef.current || !mapRef.current) return;
@@ -49,6 +51,24 @@ export default function AMapContainer({
     mapRef.current.add(markerRef.current);
   }
 
+  function drawPolyline(polyline: GeoLocation[]) {
+    if(!instanceRef.current || !mapRef.current || polyline.length === 0) return;
+    
+    const path = polyline.map((location) => new instanceRef.current.LngLat(location[0], location[1]));
+    const polylineInstance = new instanceRef.current.Polyline({
+      path,
+      strokeColor: "red",
+      strokeWeight: 6,
+      strokeOpacity: 0.8
+    });
+    
+    if(polylineRef.current) {
+      mapRef.current.remove(polylineRef.current);
+    }
+    polylineRef.current = polylineInstance;
+    mapRef.current.add(polylineInstance);
+  }
+
   const initMap = async () => {
     try {
       instanceRef.current = await AMapLoader.load({
@@ -72,6 +92,10 @@ export default function AMapContainer({
           putMarker(markedLocation);
         });
       }
+
+      if(polyline) {
+        drawPolyline(polyline);
+      }
     } catch (e) {
       console.log(e);
     }
@@ -89,6 +113,16 @@ export default function AMapContainer({
     return () => mapRef.current?.destroy();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if(!mapRef.current || !location) return;
+
+    mapRef.current.setCenter(location);
+  }, [location]);
+
+  useEffect(() => {
+    drawPolyline(polyline);
+  }, [polyline]);
 
   return <div ref={containerRef} style={{ width, height }}/>;
 }

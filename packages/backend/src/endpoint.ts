@@ -1,3 +1,4 @@
+import type { MessagePacket } from "shared";
 import ws from "ws";
 import RouteParser from "route-parser";
 import "reflect-metadata";
@@ -10,11 +11,6 @@ const ON_ERROR_METADATA_KEY = Symbol("onerror"); // string
 interface MessageHandler {
   type: string
   handlerName: string
-}
-
-export interface MessagePacket<D> {
-  type: string
-  data: D
 }
 
 export type Session = ws.WebSocket & {

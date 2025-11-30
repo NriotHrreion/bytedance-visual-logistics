@@ -5,7 +5,7 @@ import cors from "cors";
 import ws from "ws";
 import { OrdersController } from "./controllers/orders";
 import { PathsController } from "./controllers/paths";
-import { PointsEndpoint } from "./endpoints/points";
+import { RoutesEndpoint } from "./endpoints/routes";
 import "./env-config";
 
 const PORT = process.env["BACKEND_PORT"];
@@ -26,7 +26,7 @@ app.use("/v1/orders", new OrdersController().router);
 app.use("/v1/paths", new PathsController().router);
 
 // Endpoints
-new PointsEndpoint(wss);
+new RoutesEndpoint(wss);
 
 server.listen(PORT, async () => {
   console.log(styleText("green", `Backend Server is ready on port ${PORT}.`));

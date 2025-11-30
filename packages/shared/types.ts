@@ -24,7 +24,6 @@ export interface Order {
 }
 
 export type OrderInfoDTO = Order & {
-  currentLocation?: GeoLocation
   claimCode?: string
 }
 
@@ -34,3 +33,8 @@ export type APIResponse<T> = T & {
   code: number
   error: string
 };
+
+export interface MessagePacket<D> {
+  type: string
+  data: D
+}

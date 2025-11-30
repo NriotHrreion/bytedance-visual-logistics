@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import type { GeoLocation } from "shared";
+import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { useParams } from "next/navigation";
 import {
@@ -16,6 +17,7 @@ import { OrderItem } from "@/components/order-item";
 import { copyToClipboard } from "@/lib/utils";
 import { useOrder } from "@/hooks/use-order";
 import { useDeliveryPaths } from "@/hooks/use-delivery-paths";
+import { RealtimeRouteClient } from "@/lib/ws/realtime-route";
 
 const AMapContainer = dynamic(() => import("@/components/amap-container"), { ssr: false });
 
@@ -23,6 +25,8 @@ export default function OrderPage() {
   const { id } = useParams<{ id: string }>();
   const { order, mutate } = useOrder(id);
   const { paths } = useDeliveryPaths(id);
+  const wsRef = useRef<RealtimeRouteClient>(new RealtimeRouteClient(id));
+  const [points, setPoints] = useState<GeoLocation[]>([]);
   const [codeCopied, setCodeCopied] = useState(false);
 
   const handleCopyClaimCode = async () => {
@@ -36,6 +40,24 @@ export default function OrderPage() {
       setCodeCopied(false);
     }
   };
+
+  useEffect(() => {
+    wsRef.current.on("init-route", (route) => {
+      setPoints(route);
+    });
+
+    wsRef.current.on("update-route", (location) => {
+      setPoints((prev) => {
+        if(prev[prev.length - 1][0] === location[0] && prev[prev.length - 1][1] === location[1]) {
+          return prev;
+        }
+        return [...prev, location];
+      });
+    });
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    return () => wsRef.current.close();
+  }, []);
   
   if(!order) {
     return (
@@ -48,11 +70,12 @@ export default function OrderPage() {
     );
   }
   
-  const latestRoute = paths.length > 0 ? paths[paths.length - 1] : null;
-  
   return (
     <div>
-      {latestRoute && <AMapContainer height={450} location={latestRoute.location}/>}
+      <AMapContainer
+        height={450}
+        location={points.length > 0 ? points[points.length - 1] : order.current}
+        polyline={points}/>
       <div className="px-8 max-sm:px-4">
         <Timeline className="mx-3 py-6" reverse>
           {paths.map(({ time, location, action, claimCode }, i) => {

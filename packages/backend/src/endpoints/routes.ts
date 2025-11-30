@@ -6,10 +6,10 @@ import { PathsService } from "@/services/paths";
 import { PointsService } from "@/services/points";
 import { getRandom } from "@/utils";
 
-const UPDATE_INTERVAL_MS = 3000;
+const UPDATE_INTERVAL_MS = 1000;
 
-@Connectable("/points/:id")
-export class PointsEndpoint extends Endpoint {
+@Connectable("/routes/:id")
+export class RoutesEndpoint extends Endpoint {
   private ordersService = new OrdersService();
   private pathsService = new PathsService();
   private pointsService = new PointsService();

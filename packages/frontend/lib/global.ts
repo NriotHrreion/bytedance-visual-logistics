@@ -1,4 +1,5 @@
 import axios from "axios";
 
-export const backendAPI = axios.create({ baseURL: "http://localhost:3010/v1" });
+export const backendBase = "localhost:3010";
+export const backendAPI = axios.create({ baseURL: `http://${backendBase}/v1` });
 export const storageKey = "visual-logistics";
