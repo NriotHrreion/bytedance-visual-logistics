@@ -1,3 +1,4 @@
+import type { SetState } from "./types";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -22,4 +23,13 @@ export function formatDate(date: Date | number): string {
     minute: "2-digit"
   });
   return formatter.format(date).replaceAll("/", "-");
+}
+
+export function getCurrentState<T>(setState: SetState<T>): Promise<T> {
+  return new Promise((resolve) => {
+    setState((prev) => {
+      resolve(prev);
+      return prev;
+    });
+  });
 }

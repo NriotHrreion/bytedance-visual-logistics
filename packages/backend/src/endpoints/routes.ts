@@ -59,8 +59,15 @@ export class RoutesEndpoint extends Endpoint {
       if(sessions.size === 0) return;
 
       const order = await this.ordersService.getOrderById(orderId);
+      const currentPointIndex = await this.ordersService.getCurrentPointIndex(orderId);
       for(const session of sessions) {
-        this.send(session, { type: "route", data: order.current });
+        this.send(session, {
+          type: "update",
+          data: {
+            location: order.current,
+            currentPointIndex
+          }
+        });
       }
     });
   }
@@ -78,7 +85,10 @@ export class RoutesEndpoint extends Endpoint {
     }
     this.sessionsMap.get(orderId)?.add(session);
 
-    this.send(session, { type: "init", data: await this.pointsService.readRouteBeforeCurrentLocation(orderId) });
+    if(!this.cachedRoutes.has(orderId)) {
+      this.cachedRoutes.set(orderId, await this.pointsService.readRoute(orderId));
+    }
+    this.send(session, { type: "init", data: this.cachedRoutes.get(orderId) });
   }
 
   @OnClose

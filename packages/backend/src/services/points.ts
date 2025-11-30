@@ -35,15 +35,4 @@ export class PointsService {
     const points = await db.query("select * from route_points where order_id = $1 order by sequence_number asc;", [orderId]);
     return points.rows.map(({ location }) => deserializeGeoLocation(location));
   }
-
-  async readRouteBeforeCurrentLocation(orderId: string): Promise<GeoLocation[]> {
-    const result = await db.query("select current_point_index from orders where id = $1;", [orderId]);
-    if(result.rows.length === 0) {
-      throw new Error("Cannot find the order");
-    }
-
-    const currentPointIndex = result.rows[0].current_point_index;
-    const route = await this.readRoute(orderId);
-    return route.slice(0, currentPointIndex + 1);
-  }
 }

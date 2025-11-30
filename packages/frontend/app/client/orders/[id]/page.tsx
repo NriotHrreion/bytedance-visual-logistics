@@ -14,10 +14,12 @@ import {
 } from "@/components/ui/timeline";
 import { GeoLocationLabel } from "@/components/geolocation-label";
 import { OrderItem } from "@/components/order-item";
-import { copyToClipboard } from "@/lib/utils";
+import { copyToClipboard, getCurrentState } from "@/lib/utils";
 import { useOrder } from "@/hooks/use-order";
 import { useDeliveryPaths } from "@/hooks/use-delivery-paths";
 import { RealtimeRouteClient } from "@/lib/ws/realtime-route";
+
+import TruckIcon from "@/assets/truck.png";
 
 const AMapContainer = dynamic(() => import("@/components/amap-container"), { ssr: false });
 
@@ -27,6 +29,7 @@ export default function OrderPage() {
   const { paths } = useDeliveryPaths(id);
   const wsRef = useRef<RealtimeRouteClient>(new RealtimeRouteClient(id));
   const [points, setPoints] = useState<GeoLocation[]>([]);
+  const [currentPointIndex, setCurrentPointIndex] = useState(0);
   const [codeCopied, setCodeCopied] = useState(false);
 
   const handleCopyClaimCode = async () => {
@@ -46,13 +49,17 @@ export default function OrderPage() {
       setPoints(route);
     });
 
-    wsRef.current.on("update-route", (location) => {
-      setPoints((prev) => {
-        if(prev[prev.length - 1][0] === location[0] && prev[prev.length - 1][1] === location[1]) {
-          return prev;
-        }
-        return [...prev, location];
-      });
+    wsRef.current.on("update-route", async (location, currentPointIndex) => {
+      setCurrentPointIndex(currentPointIndex);
+      const routePoints = await getCurrentState(setPoints);
+      if(currentPointIndex + 1 < routePoints.length) {
+        const nextPoint = routePoints[currentPointIndex + 1];
+        const angle = Math.atan2(
+          nextPoint[0] - location[0],
+          nextPoint[1] - location[1]
+        ) * (180 / Math.PI);
+        document.getElementById("truck-indicator")?.style.setProperty("transform", `rotate(${angle}deg)`);
+      }
     });
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -74,8 +81,22 @@ export default function OrderPage() {
     <div>
       <AMapContainer
         height={450}
-        location={points.length > 0 ? points[points.length - 1] : order.current}
-        polyline={points}/>
+        location={points[currentPointIndex]}
+        alwaysCentered
+        polylines={[
+          { points, color: "#caeccc" },
+          { points: points.slice(0, currentPointIndex + 1), color: "green" }
+        ]}
+        indicator
+        indicatorContent={
+          <img
+            width={25.75}
+            height={55.75}
+            src={TruckIcon.src}
+            alt="truck-indicator"
+            id="truck-indicator"/>
+        }
+        indicatorOffset={[-12.875, -27.875]}/>
       <div className="px-8 max-sm:px-4">
         <Timeline className="mx-3 py-6" reverse>
           {paths.map(({ time, location, action, claimCode }, i) => {
