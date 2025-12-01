@@ -4,7 +4,7 @@ import { WebSocketClient } from ".";
 
 export class RealtimeRouteClient extends WebSocketClient<{
   "init-route": [GeoLocation[]]
-  "update-route": [GeoLocation, number]
+  "update-route": [number]
 }> {
   public constructor(orderId: string) {
     super(`ws://${backendBase}/routes/${orderId}`);
@@ -15,10 +15,10 @@ export class RealtimeRouteClient extends WebSocketClient<{
   override onMessage(type: string, data: any) {
     switch(type) {
       case "init":
-        this.emit("init-route", data);
+        this.emit("init-route", data.route);
         break;
       case "update":
-        this.emit("update-route", data.location, data.currentPointIndex);
+        this.emit("update-route", data.currentPointIndex);
         break;
     }
   }
@@ -26,6 +26,6 @@ export class RealtimeRouteClient extends WebSocketClient<{
   override onClose() { }
 
   override onError(e: Event) {
-    console.error(`WebSocket Error (${this.ws.url}): `, e);
+    // console.error(`WebSocket Error (${this.ws.url}): `, e);
   }
 }

@@ -1,8 +1,10 @@
 import "@amap/amap-jsapi-types";
 import { amapAPIKey, type GeoLocation } from "shared";
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import AMapLoader from "@amap/amap-jsapi-loader";
+
+const AUTO_CENTER_AFTER_MOVING_MS = 2000;
 
 interface PolylineProperties {
   points: GeoLocation[]
@@ -13,7 +15,7 @@ export default function AMapContainer({
   width,
   height,
   location,
-  alwaysCentered = false,
+  autoCentered = false,
   zoom = 14,
   markable = false,
   polylines = [],
@@ -25,7 +27,7 @@ export default function AMapContainer({
   width?: number
   height?: number
   location?: GeoLocation
-  alwaysCentered?: boolean
+  autoCentered?: boolean
   zoom?: number
   markable?: boolean
   polylines?: PolylineProperties[]
@@ -40,6 +42,9 @@ export default function AMapContainer({
   const markerRef = useRef<AMap.Marker | null>(null);
   const indicatorRef = useRef<AMap.Marker | null>(null);
   const polylinesRef = useRef<AMap.Polyline[]>([]);
+  const [isMoving, setMoving] = useState(false);
+  const dragEndTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const zoomEndTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   function putMarker(at: GeoLocation) {
     if(!instanceRef.current || !mapRef.current) return;
@@ -93,6 +98,21 @@ export default function AMapContainer({
         mapStyle: "amap://styles/whitesmoke"
       });
 
+      mapRef.current.on("dragstart", () => {
+        setMoving(true);
+        dragEndTimerRef.current && clearTimeout(dragEndTimerRef.current);
+      });
+      mapRef.current.on("dragend", () => {
+        dragEndTimerRef.current = setTimeout(() => setMoving(false), AUTO_CENTER_AFTER_MOVING_MS);
+      });
+      mapRef.current.on("zoomstart", () => {
+        setMoving(true);
+        zoomEndTimerRef.current && clearTimeout(zoomEndTimerRef.current);
+      });
+      mapRef.current.on("zoomend", () => {
+        zoomEndTimerRef.current = setTimeout(() => setMoving(false), AUTO_CENTER_AFTER_MOVING_MS);
+      });
+
       if(markable) {
         if(location) putMarker(location);
 
@@ -127,7 +147,11 @@ export default function AMapContainer({
 
     initMap();
 
-    return () => mapRef.current?.destroy();
+    return () => {
+      mapRef.current?.destroy();
+      dragEndTimerRef.current && clearTimeout(dragEndTimerRef.current);
+      zoomEndTimerRef.current && clearTimeout(zoomEndTimerRef.current);
+    };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -142,13 +166,13 @@ export default function AMapContainer({
   useEffect(() => {
     if(!mapRef.current || !location) return;
 
-    if(alwaysCentered) {
+    if(autoCentered && !isMoving) {
       mapRef.current.setCenter(location);
     }
     if(indicator && indicatorRef.current) {
       indicatorRef.current.setPosition(location);
     }
-  }, [alwaysCentered, indicator, location]);
+  }, [autoCentered, indicator, location, isMoving]);
 
   return <div ref={containerRef} style={{ width, height }}/>;
 }

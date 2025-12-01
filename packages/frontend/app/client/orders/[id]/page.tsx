@@ -49,14 +49,15 @@ export default function OrderPage() {
       setPoints(route);
     });
 
-    wsRef.current.on("update-route", async (location, currentPointIndex) => {
+    wsRef.current.on("update-route", async (currentPointIndex) => {
       setCurrentPointIndex(currentPointIndex);
       const routePoints = await getCurrentState(setPoints);
       if(currentPointIndex + 1 < routePoints.length) {
+        const currentPoint = routePoints[currentPointIndex];
         const nextPoint = routePoints[currentPointIndex + 1];
         const angle = Math.atan2(
-          nextPoint[0] - location[0],
-          nextPoint[1] - location[1]
+          nextPoint[0] - currentPoint[0],
+          nextPoint[1] - currentPoint[1]
         ) * (180 / Math.PI);
         document.getElementById("truck-indicator")?.style.setProperty("transform", `rotate(${angle}deg)`);
       }
@@ -82,7 +83,7 @@ export default function OrderPage() {
       <AMapContainer
         height={450}
         location={points[currentPointIndex]}
-        alwaysCentered
+        autoCentered
         polylines={[
           { points, color: "#caeccc" },
           { points: points.slice(0, currentPointIndex + 1), color: "green" }
