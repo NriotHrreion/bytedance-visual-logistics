@@ -22,7 +22,8 @@ export class OrdersController extends Controller {
       const paths = await this.pathsService.getPathsByOrderId(order.id) ?? [];
       orderDTOList.push({
         ...order,
-        claimCode: paths[paths.length - 1]?.claimCode
+        claimCode: paths[paths.length - 1]?.claimCode,
+        routeLength: await this.pointsService.getRouteLength(order.id)
       });
     }
 
@@ -42,7 +43,8 @@ export class OrdersController extends Controller {
     this.sendResponse(res, {
       order: {
         ...order,
-        claimCode: paths[paths.length - 1]?.claimCode
+        claimCode: paths[paths.length - 1]?.claimCode,
+        routeLength: await this.pointsService.getRouteLength(order.id)
       } as OrderInfoDTO
     });
   }

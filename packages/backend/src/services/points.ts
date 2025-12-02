@@ -35,4 +35,9 @@ export class PointsService {
     const points = await db.query("select * from route_points where order_id = $1 order by sequence_number asc;", [orderId]);
     return points.rows.map(({ location }) => deserializeGeoLocation(location));
   }
+
+  async getRouteLength(orderId: string): Promise<number> {
+    const result = await db.query("select COUNT(*) as count from route_points where order_id = $1;", [orderId]);
+    return parseInt(result.rows[0].count);
+  }
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import type { GeoLocation } from "shared";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { useParams } from "next/navigation";
 import {
@@ -27,9 +27,12 @@ export default function OrderPage() {
   const { id } = useParams<{ id: string }>();
   const { order, mutate } = useOrder(id);
   const { paths } = useDeliveryPaths(id);
-  const wsRef = useRef<RealtimeRouteClient>(new RealtimeRouteClient(id));
+  const wsClient = useMemo(() => new RealtimeRouteClient(id), [id]);
   const [points, setPoints] = useState<GeoLocation[]>([]);
   const [currentPointIndex, setCurrentPointIndex] = useState(0);
+  const updateIntervalRef = useRef<number | null>(null);
+  const [displayedPoint, setDisplayedPoint] = useState<GeoLocation | null>(null);
+  const animationTimerRef = useRef<number | null>(null);
   const [codeCopied, setCodeCopied] = useState(false);
 
   const handleCopyClaimCode = async () => {
@@ -44,12 +47,18 @@ export default function OrderPage() {
     }
   };
 
+  const handleVisibilityChange = useCallback(() => {
+    setDisplayedPoint(points[currentPointIndex]);
+  }, [points, currentPointIndex]);
+
   useEffect(() => {
-    wsRef.current.on("init-route", (route) => {
+    wsClient.on("init-route", (route, currentPointIndex, updateInterval) => {
       setPoints(route);
+      setDisplayedPoint(route[currentPointIndex]);
+      updateIntervalRef.current = updateInterval;
     });
 
-    wsRef.current.on("update-route", async (currentPointIndex) => {
+    wsClient.on("update-route", async (currentPointIndex) => {
       setCurrentPointIndex(currentPointIndex);
       const routePoints = await getCurrentState(setPoints);
       if(currentPointIndex + 1 < routePoints.length) {
@@ -63,9 +72,51 @@ export default function OrderPage() {
       }
     });
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    return () => wsRef.current.close();
-  }, []);
+    return () => wsClient.close();
+  }, [wsClient]);
+
+  useEffect(() => {
+    if(currentPointIndex + 1 >= points.length || updateIntervalRef.current === null) return;
+
+    const currentPoint = points[currentPointIndex];
+    const nextPoint = points[currentPointIndex + 1];
+    const vx = (nextPoint[0] - currentPoint[0]) / updateIntervalRef.current;
+    const vy = (nextPoint[1] - currentPoint[1]) / updateIntervalRef.current;
+
+    let lastTimestamp: number | null = null;
+
+    function animate(timestamp: number) {
+      if(!animationTimerRef.current) return;
+
+      if(lastTimestamp === null) {
+        lastTimestamp = timestamp;
+        animationTimerRef.current = window.requestAnimationFrame(animate);
+        return;
+      }
+      
+      const delta = timestamp - lastTimestamp; // ms
+      lastTimestamp = timestamp;
+
+      setDisplayedPoint(([x, y]) => [
+        x + vx * delta,
+        y + vy * delta
+      ]);
+
+      animationTimerRef.current = window.requestAnimationFrame(animate);
+    }
+
+    animationTimerRef.current = window.requestAnimationFrame(animate);
+    return () => {
+      window.cancelAnimationFrame(animationTimerRef.current);
+      animationTimerRef.current = null;
+    };
+  }, [points, currentPointIndex]);
+
+  useEffect(() => {
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
+  }, [handleVisibilityChange]);
   
   if(!order) {
     return (
@@ -82,11 +133,11 @@ export default function OrderPage() {
     <div>
       <AMapContainer
         height={450}
-        location={points[currentPointIndex]}
+        location={displayedPoint ?? points[currentPointIndex]}
         autoCentered
         polylines={[
           { points, color: "#caeccc" },
-          { points: points.slice(0, currentPointIndex + 1), color: "green" }
+          { points: [...points.slice(0, currentPointIndex + 1), displayedPoint], color: "green" }
         ]}
         indicator
         indicatorContent={
@@ -102,12 +153,14 @@ export default function OrderPage() {
         <Timeline className="mx-3 py-6" reverse>
           {paths.map(({ time, location, action, claimCode }, i) => {
             const isLast = i === paths.length - 1;
+            const isDelivering = order.status === "delivering";
             const isDelivered = order.status === "delivered";
             const isReceived = order.status === "received";
             const isCancelled = order.status === "cancelled";
             return (
               <TimelineItem
                 variant={(() => {
+                  if(i + 1 < paths.length && action === paths[i + 1].action) return "secondary";
                   if(!isLast) return "default";
                   if(isDelivered || isReceived) return "success";
                   if(isCancelled) return "destructive";
@@ -118,7 +171,9 @@ export default function OrderPage() {
                   <TimelineItemTime time={new Date(time)}/>
                 </TimelineItemHeader>
                 <TimelineItemContent>
-                  <GeoLocationLabel location={location}/>
+                  <GeoLocationLabel location={
+                    (isLast && isDelivering) ? order.current : location
+                  }/>
                   {(isLast && claimCode) && (
                     <div className="mt-1 px-3 py-2 border bg-muted rounded-md flex flex-col gap-1">
                       <span className="text-2xl text-foreground font-semibold">{claimCode}</span>

@@ -16,8 +16,9 @@ export class OrdersService {
       status: row.status,
       origin: deserializeGeoLocation(row.origin),
       destination: deserializeGeoLocation(row.destination),
+      receiver: row.receiver,
       current: deserializeGeoLocation(row.current),
-      receiver: row.receiver
+      currentPointIndex: row.current_point_index
     };
   }
 
@@ -57,11 +58,6 @@ export class OrdersService {
 
   async updateOrderStatus(id: string, status: DeliveryStatus) {
     await db.query("update orders set status = $1 where id = $2;", [status, id]);
-  }
-
-  async getCurrentPointIndex(id: string): Promise<number> {
-    const result = await db.query("select current_point_index from orders where id = $1;", [id]);
-    return result.rows[0].current_point_index;
   }
 
   async updateOrderLocation(id: string, location: GeoLocation, currentPointIndex: number) {

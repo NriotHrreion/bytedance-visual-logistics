@@ -63,6 +63,7 @@ export default function ClientPage() {
                   {...order}
                   detailsHref={`/client/orders/${order.id}`}
                   receiveButton={order.status !== "pending" && order.status !== "received" && order.status !== "cancelled"}
+                  displayCurrentLocation
                   displayClaimCode
                   onChange={() => mutate()}
                   key={order.id}/>

@@ -26,6 +26,7 @@ const timelineItemVariants = cva(
     variants: {
       variant: {
         default: "",
+        secondary: "**:data-[slot=timeline-item-title]:hidden",
         active: "*:data-[slot=timeline-item-header]:before:border-amber-600 *:data-[slot=timeline-item-header]:before:bg-amber-600 **:data-[slot=timeline-item-title]:text-lg **:data-[slot=timeline-item-title]:text-amber-600",
         success: "*:data-[slot=timeline-item-header]:before:border-green-600 *:data-[slot=timeline-item-header]:before:bg-green-600 **:data-[slot=timeline-item-title]:text-lg **:data-[slot=timeline-item-title]:text-green-600",
         destructive: "*:data-[slot=timeline-item-header]:before:border-red-600 *:data-[slot=timeline-item-header]:before:bg-red-600 **:data-[slot=timeline-item-title]:text-lg **:data-[slot=timeline-item-title]:text-red-700",
@@ -45,6 +46,7 @@ export function TimelineItem({
   return (
     <div
       data-slot="timeline-item"
+      data-variant={variant}
       className={timelineItemVariants({ variant, className })}
       {...props}/>
   );

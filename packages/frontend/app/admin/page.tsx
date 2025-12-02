@@ -93,6 +93,7 @@ export default function AdminPage() {
                 <OrderItem
                   {...order}
                   detailsHref={`/admin/orders/${order.id}`}
+                  displayCurrentLocation
                   deliverButton={order.status === "pending"}
                   cancelButton
                   deleteButton

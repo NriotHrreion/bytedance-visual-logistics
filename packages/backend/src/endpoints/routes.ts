@@ -37,7 +37,7 @@ export class RoutesEndpoint extends Endpoint {
       }
       const points = this.cachedRoutes.get(orderId);
 
-      const currentPointIndex = await this.ordersService.getCurrentPointIndex(orderId);
+      const { currentPointIndex } = await this.ordersService.getOrderById(orderId);
       const next = currentPointIndex + 1;
 
       if(next === points.length) {
@@ -51,6 +51,13 @@ export class RoutesEndpoint extends Endpoint {
       }
 
       this.ordersService.updateOrderLocation(orderId, points[next], next);
+
+      if(next % 500 === 0) {
+        this.pathsService.pushDeliveryPath(orderId, {
+          location: points[next],
+          action: "运输中"
+        });
+      }
     });
   }
 
@@ -58,7 +65,7 @@ export class RoutesEndpoint extends Endpoint {
     this.sessionsMap.forEach(async (sessions, orderId) => {
       if(sessions.size === 0) return;
 
-      const currentPointIndex = await this.ordersService.getCurrentPointIndex(orderId);
+      const { currentPointIndex } = await this.ordersService.getOrderById(orderId);
       for(const session of sessions) {
         this.send(session, {
           type: "update",
@@ -85,10 +92,14 @@ export class RoutesEndpoint extends Endpoint {
       this.cachedRoutes.set(orderId, await this.pointsService.readRoute(orderId));
     }
 
-    const currentPointIndex = await this.ordersService.getCurrentPointIndex(orderId);
+    const { currentPointIndex } = await this.ordersService.getOrderById(orderId);
     this.send(session, {
       type: "init",
-      data: { route: this.cachedRoutes.get(orderId) }
+      data: {
+        route: this.cachedRoutes.get(orderId),
+        currentPointIndex,
+        updateInterval: UPDATE_INTERVAL_MS
+      }
     });
     this.send(session, {
       type: "update",

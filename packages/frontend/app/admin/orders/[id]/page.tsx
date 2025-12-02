@@ -1,7 +1,8 @@
 "use client";
 
+import type { GeoLocation } from "shared";
 import dynamic from "next/dynamic";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import { Eye, EyeClosed } from "lucide-react";
 import { useDeliveryPaths } from "@/hooks/use-delivery-paths";
@@ -16,6 +17,10 @@ import {
   TimelineItemTitle
 } from "@/components/ui/timeline";
 import { OrderItem } from "@/components/order-item";
+import { RealtimeRouteClient } from "@/lib/ws/realtime-route";
+import { getCurrentState } from "@/lib/utils";
+
+import TruckIcon from "@/assets/truck.png";
 
 const AMapContainer = dynamic(() => import("@/components/amap-container"), { ssr: false });
 
@@ -23,7 +28,33 @@ export default function OrderPage() {
   const { id } = useParams<{ id: string }>();
   const { order, mutate } = useOrder(id);
   const { paths } = useDeliveryPaths(id);
+  const wsRef = useRef<RealtimeRouteClient>(new RealtimeRouteClient(id));
+  const [points, setPoints] = useState<GeoLocation[]>([]);
+  const [currentPointIndex, setCurrentPointIndex] = useState(0);
   const [receiverVisible, setReceiverVisible] = useState(false);
+
+  useEffect(() => {
+    wsRef.current.on("init-route", (route) => {
+      setPoints(route);
+    });
+
+    wsRef.current.on("update-route", async (currentPointIndex) => {
+      setCurrentPointIndex(currentPointIndex);
+      const routePoints = await getCurrentState(setPoints);
+      if(currentPointIndex + 1 < routePoints.length) {
+        const currentPoint = routePoints[currentPointIndex];
+        const nextPoint = routePoints[currentPointIndex + 1];
+        const angle = Math.atan2(
+          nextPoint[0] - currentPoint[0],
+          nextPoint[1] - currentPoint[1]
+        ) * (180 / Math.PI);
+        document.getElementById("truck-indicator")?.style.setProperty("transform", `rotate(${angle}deg)`);
+      }
+    });
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    return () => wsRef.current.close();
+  }, []);
 
   if(!order) {
     return (
@@ -36,15 +67,29 @@ export default function OrderPage() {
     );
   }
 
-  const latestRoute = paths.length > 0 ? paths[paths.length - 1] : null;
-
   return (
     <div className="h-screen flex">
       <div className="flex-2 *:w-full *:h-full">
-        {latestRoute && <AMapContainer location={latestRoute.location}/>}
+        <AMapContainer
+          location={points[currentPointIndex]}
+          autoCentered
+          polylines={[
+            { points, color: "#caeccc" },
+            { points: points.slice(0, currentPointIndex + 1), color: "green" }
+          ]}
+          indicator
+          indicatorContent={
+            <img
+              width={25.75}
+              height={55.75}
+              src={TruckIcon.src}
+              alt="truck-indicator"
+              id="truck-indicator"/>
+          }
+          indicatorOffset={[-12.875, -27.875]}/>
       </div>
       <div className="flex-1 border-l shadow-lg z-10 flex flex-col">
-        <div className="px-7 py-6 space-y-4 border-b">
+        <div className="px-7 py-6 space-y-4 border-b shadow-sm z-10">
           <h1 className="text-xl font-semibold">订单详情</h1>
           <div className="flex flex-col gap-2 *:flex *:justify-between *:[&>span]:last:text-muted-foreground">
             <div>
@@ -83,12 +128,14 @@ export default function OrderPage() {
             <Timeline className="h-fit min-h-full mx-5 py-6 mb-auto" reverse>
               {paths.map(({ time, location, action }, i) => {
                 const isLast = i === paths.length - 1;
+                const isDelivering = order.status === "delivering";
                 const isDelivered = order.status === "delivered";
                 const isReceived = order.status === "received";
                 const isCancelled = order.status === "cancelled";
                 return (
                   <TimelineItem
                     variant={(() => {
+                      if(i + 1 < paths.length && action === paths[i + 1].action) return "secondary";
                       if(!isLast) return "default";
                       if(isDelivered || isReceived) return "success";
                       if(isCancelled) return "destructive";
@@ -99,7 +146,9 @@ export default function OrderPage() {
                       <TimelineItemTime time={new Date(time)}/>
                     </TimelineItemHeader>
                     <TimelineItemContent>
-                      <GeoLocationLabel location={location}/>
+                      <GeoLocationLabel location={
+                        (isLast && isDelivering) ? order.current : location
+                      }/>
                     </TimelineItemContent>
                   </TimelineItem>
                 );

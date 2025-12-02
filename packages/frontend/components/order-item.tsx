@@ -1,4 +1,5 @@
 import type { OrderInfoDTO } from "shared";
+import { useMemo } from "react";
 import Link from "next/link";
 import { Ellipsis, PackageCheck, PackageX, Trash2, TruckElectric } from "lucide-react";
 import { Card } from "@/components/ui/card";
@@ -8,7 +9,7 @@ import { GeoLocationLabel } from "@/components/geolocation-label";
 import { Hint, HintContent } from "./ui/hint";
 import { Price } from "./price";
 import { useOrder } from "@/hooks/use-order";
-import { formatDate } from "@/lib/utils";
+import { estimateEtaDay, formatDate } from "@/lib/utils";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -34,9 +35,12 @@ export function OrderItem({
   price,
   createdAt,
   status,
+  origin,
   destination,
-  currentLocation,
   claimCode,
+  current,
+  currentPointIndex,
+  routeLength,
   detailsHref,
   deliverButton = false,
   receiveButton = false,
@@ -47,6 +51,10 @@ export function OrderItem({
   onChange
 }: OrderInfoDTO & OrderItemOptions) {
   const { deliver, receive, cancel, delete: del } = useOrder(id);
+  const etaDay = useMemo(
+    () => Math.floor(estimateEtaDay(origin, destination, currentPointIndex / routeLength)),
+    [origin, destination, currentPointIndex, routeLength]
+  );
 
   return (
     <Card className="p-3 gap-2">
@@ -67,8 +75,8 @@ export function OrderItem({
               </span>
             )
           }
-          {(currentLocation && displayCurrentLocation) && (
-            <GeoLocationLabel className="text-sm whitespace-nowrap" location={currentLocation}/>
+          {(current && displayCurrentLocation) && (
+            <GeoLocationLabel className="text-sm whitespace-nowrap" location={current}/>
           )}
           <span
             className="text-sm text-muted-foreground"
@@ -113,7 +121,10 @@ export function OrderItem({
       {status === "delivering" && (
         <Hint>
           <TruckElectric size={17}/>
-          <HintContent>预计明天送达</HintContent>
+          {etaDay === 0 && <HintContent>预计今天送达</HintContent>}
+          {etaDay === 1 && <HintContent>预计明天送达</HintContent>}
+          {etaDay === 2 && <HintContent>预计后天送达</HintContent>}
+          {etaDay > 2 && <HintContent>预计 {etaDay} 天后送达</HintContent>}
         </Hint>
       )}
       {(claimCode && displayClaimCode) && (
