@@ -14,7 +14,7 @@ export default function Page() {
           <Button
             variant="outline"
             asChild>
-            <Link href="/admin">
+            <Link href="/admin/orders">
               <Store />
               商家
             </Link>
