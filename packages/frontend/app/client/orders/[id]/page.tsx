@@ -4,6 +4,7 @@ import type { GeoLocation } from "shared";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { useParams } from "next/navigation";
+import { MousePointer2 } from "lucide-react";
 import {
   Timeline,
   TimelineItem,
@@ -18,6 +19,7 @@ import { copyToClipboard, getCurrentState } from "@/lib/utils";
 import { useOrder } from "@/hooks/use-order";
 import { useDeliveryPaths } from "@/hooks/use-delivery-paths";
 import { RealtimeRouteClient } from "@/lib/ws/realtime-route";
+import { Button } from "@/components/ui/button";
 
 import TruckIcon from "@/assets/truck.png";
 
@@ -28,6 +30,7 @@ export default function OrderPage() {
   const { order, mutate } = useOrder(id);
   const { paths } = useDeliveryPaths(id);
   const wsClient = useMemo(() => new RealtimeRouteClient(id), [id]);
+  const mapRef = useRef<AMap.Map | null>(null);
   const [points, setPoints] = useState<GeoLocation[]>([]);
   const [currentPointIndex, setCurrentPointIndex] = useState(0);
   const updateIntervalRef = useRef<number | null>(null);
@@ -60,7 +63,10 @@ export default function OrderPage() {
 
     wsClient.on("update-route", async (currentPointIndex) => {
       setCurrentPointIndex(currentPointIndex);
+
       const routePoints = await getCurrentState(setPoints);
+      setDisplayedPoint(routePoints[currentPointIndex]);
+      
       if(currentPointIndex + 1 < routePoints.length) {
         const currentPoint = routePoints[currentPointIndex];
         const nextPoint = routePoints[currentPointIndex + 1];
@@ -131,24 +137,36 @@ export default function OrderPage() {
   
   return (
     <div>
-      <AMapContainer
-        height={450}
-        location={displayedPoint ?? points[currentPointIndex]}
-        autoCentered
-        polylines={[
-          { points, color: "#caeccc" },
-          { points: [...points.slice(0, currentPointIndex + 1), displayedPoint], color: "green" }
-        ]}
-        indicator
-        indicatorContent={
-          <img
-            width={25.75}
-            height={55.75}
-            src={TruckIcon.src}
-            alt="truck-indicator"
-            id="truck-indicator"/>
-        }
-        indicatorOffset={[-12.875, -27.875]}/>
+      <div className="relative">
+        <AMapContainer
+          height={450}
+          location={displayedPoint ?? points[currentPointIndex]}
+          polylines={[
+            { points, color: "#caeccc" },
+            { points: [...points.slice(0, currentPointIndex + 1), displayedPoint], color: "green" }
+          ]}
+          indicator
+          indicatorContent={
+            <img
+              width={25.75}
+              height={55.75}
+              src={TruckIcon.src}
+              alt="truck-indicator"
+              id="truck-indicator"/>
+          }
+          indicatorOffset={[-12.875, -27.875]}
+          ref={mapRef}/>
+        <Button
+          variant="outline"
+          size="icon"
+          title="定位到当前位置"
+          className="max-w-10 max-h-10 absolute bottom-4 right-4 shadow-md"
+          onClick={() => {
+            mapRef.current.setCenter(displayedPoint ?? points[currentPointIndex]);
+          }}>
+          <MousePointer2 />
+        </Button>
+      </div>
       <div className="px-8 max-sm:px-4">
         <Timeline className="mx-3 py-6" reverse>
           {paths.map(({ time, location, action, claimCode }, i) => {

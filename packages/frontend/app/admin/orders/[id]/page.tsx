@@ -2,9 +2,9 @@
 
 import type { GeoLocation } from "shared";
 import dynamic from "next/dynamic";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "next/navigation";
-import { Eye, EyeClosed } from "lucide-react";
+import { Eye, EyeClosed, MousePointer2 } from "lucide-react";
 import { useDeliveryPaths } from "@/hooks/use-delivery-paths";
 import { useOrder } from "@/hooks/use-order";
 import { GeoLocationLabel } from "@/components/geolocation-label";
@@ -19,6 +19,7 @@ import {
 import { OrderItem } from "@/components/order-item";
 import { RealtimeRouteClient } from "@/lib/ws/realtime-route";
 import { getCurrentState } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 import TruckIcon from "@/assets/truck.png";
 
@@ -28,19 +29,32 @@ export default function OrderPage() {
   const { id } = useParams<{ id: string }>();
   const { order, mutate } = useOrder(id);
   const { paths } = useDeliveryPaths(id);
-  const wsRef = useRef<RealtimeRouteClient>(new RealtimeRouteClient(id));
+  const wsClient = useMemo(() => new RealtimeRouteClient(id), [id]);
+  const mapRef = useRef<AMap.Map | null>(null);
   const [points, setPoints] = useState<GeoLocation[]>([]);
   const [currentPointIndex, setCurrentPointIndex] = useState(0);
+  const updateIntervalRef = useRef<number | null>(null);
+  const [displayedPoint, setDisplayedPoint] = useState<GeoLocation | null>(null);
+  const animationTimerRef = useRef<number | null>(null);
   const [receiverVisible, setReceiverVisible] = useState(false);
 
+  const handleVisibilityChange = useCallback(() => {
+    setDisplayedPoint(points[currentPointIndex]);
+  }, [points, currentPointIndex]);
+
   useEffect(() => {
-    wsRef.current.on("init-route", (route) => {
+    wsClient.on("init-route", (route, currentPointIndex, updateInterval) => {
       setPoints(route);
+      setDisplayedPoint(route[currentPointIndex]);
+      updateIntervalRef.current = updateInterval;
     });
 
-    wsRef.current.on("update-route", async (currentPointIndex) => {
+    wsClient.on("update-route", async (currentPointIndex) => {
       setCurrentPointIndex(currentPointIndex);
+
       const routePoints = await getCurrentState(setPoints);
+      setDisplayedPoint(routePoints[currentPointIndex]);
+      
       if(currentPointIndex + 1 < routePoints.length) {
         const currentPoint = routePoints[currentPointIndex];
         const nextPoint = routePoints[currentPointIndex + 1];
@@ -52,9 +66,51 @@ export default function OrderPage() {
       }
     });
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    return () => wsRef.current.close();
-  }, []);
+    return () => wsClient.close();
+  }, [wsClient]);
+
+  useEffect(() => {
+    if(currentPointIndex + 1 >= points.length || updateIntervalRef.current === null) return;
+
+    const currentPoint = points[currentPointIndex];
+    const nextPoint = points[currentPointIndex + 1];
+    const vx = (nextPoint[0] - currentPoint[0]) / updateIntervalRef.current;
+    const vy = (nextPoint[1] - currentPoint[1]) / updateIntervalRef.current;
+
+    let lastTimestamp: number | null = null;
+
+    function animate(timestamp: number) {
+      if(!animationTimerRef.current) return;
+
+      if(lastTimestamp === null) {
+        lastTimestamp = timestamp;
+        animationTimerRef.current = window.requestAnimationFrame(animate);
+        return;
+      }
+      
+      const delta = timestamp - lastTimestamp; // ms
+      lastTimestamp = timestamp;
+
+      setDisplayedPoint(([x, y]) => [
+        x + vx * delta,
+        y + vy * delta
+      ]);
+
+      animationTimerRef.current = window.requestAnimationFrame(animate);
+    }
+
+    animationTimerRef.current = window.requestAnimationFrame(animate);
+    return () => {
+      window.cancelAnimationFrame(animationTimerRef.current);
+      animationTimerRef.current = null;
+    };
+  }, [points, currentPointIndex]);
+
+  useEffect(() => {
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
+  }, [handleVisibilityChange]);
 
   if(!order) {
     return (
@@ -69,13 +125,12 @@ export default function OrderPage() {
 
   return (
     <div className="h-screen flex">
-      <div className="flex-2 *:w-full *:h-full">
+      <div className="flex-2 *:w-full *:h-full relative">
         <AMapContainer
-          location={points[currentPointIndex]}
-          autoCentered
+          location={displayedPoint ?? points[currentPointIndex]}
           polylines={[
             { points, color: "#caeccc" },
-            { points: points.slice(0, currentPointIndex + 1), color: "green" }
+          { points: [...points.slice(0, currentPointIndex + 1), displayedPoint], color: "green" }
           ]}
           indicator
           indicatorContent={
@@ -86,7 +141,18 @@ export default function OrderPage() {
               alt="truck-indicator"
               id="truck-indicator"/>
           }
-          indicatorOffset={[-12.875, -27.875]}/>
+          indicatorOffset={[-12.875, -27.875]}
+          ref={mapRef}/>
+        <Button
+          variant="outline"
+          size="icon"
+          title="定位到当前位置"
+          className="max-w-10 max-h-10 absolute bottom-8 right-8 shadow-md"
+          onClick={() => {
+            mapRef.current.setCenter(displayedPoint ?? points[currentPointIndex]);
+          }}>
+          <MousePointer2 />
+        </Button>
       </div>
       <div className="flex-1 border-l shadow-lg z-10 flex flex-col">
         <div className="px-7 py-6 space-y-4 border-b shadow-sm z-10">

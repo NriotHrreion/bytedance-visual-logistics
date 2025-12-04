@@ -1,6 +1,6 @@
 import "@amap/amap-jsapi-types";
 import { amapAPIKey, type GeoLocation } from "shared";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import AMapLoader from "@amap/amap-jsapi-loader";
 
@@ -22,7 +22,8 @@ export default function AMapContainer({
   indicator = false,
   indicatorContent,
   indicatorOffset,
-  onMark
+  onMark,
+  ref
 }: {
   width?: number
   height?: number
@@ -32,13 +33,15 @@ export default function AMapContainer({
   markable?: boolean
   polylines?: PolylineProperties[]
   indicator?: boolean
-  indicatorContent?: React.ReactNode,
-  indicatorOffset?: [number, number],
+  indicatorContent?: React.ReactNode
+  indicatorOffset?: [number, number]
   onMark?: (location: GeoLocation) => void
+  ref?: React.RefObject<AMap.Map | null>
 }) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const instanceRef = useRef<typeof AMap | null>(null);
-  const mapRef = useRef<AMap.Map | null>(null);
+  const _mapRef = useRef<AMap.Map | null>(null);
+  const mapRef = ref ?? _mapRef;
   const markerRef = useRef<AMap.Marker | null>(null);
   const indicatorRef = useRef<AMap.Marker | null>(null);
   const polylinesRef = useRef<AMap.Polyline[]>([]);
@@ -46,7 +49,7 @@ export default function AMapContainer({
   const dragEndTimerRef = useRef<NodeJS.Timeout | null>(null);
   const zoomEndTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  function putMarker(at: GeoLocation) {
+  const putMarker = (at: GeoLocation) => {
     if(!instanceRef.current || !mapRef.current) return;
 
     if(markerRef.current) {
@@ -66,9 +69,9 @@ export default function AMapContainer({
       offset: new instanceRef.current.Pixel(-13, -30),
     });
     mapRef.current.add(markerRef.current);
-  }
+  };
 
-  function drawPolyline(polyline: GeoLocation[], color: string) {
+  const drawPolyline = useCallback((polyline: GeoLocation[], color: string) => {
     if(!instanceRef.current || !mapRef.current || polyline.length === 0) return;
     
     const path = polyline.map((location) => new instanceRef.current.LngLat(location[0], location[1]));
@@ -81,7 +84,7 @@ export default function AMapContainer({
     
     polylinesRef.current.push(polylineInstance);
     mapRef.current.add(polylineInstance);
-  }
+  }, [mapRef]);
 
   const initMap = async () => {
     try {
@@ -161,7 +164,7 @@ export default function AMapContainer({
     polylinesRef.current.forEach((polyline) => mapRef.current.remove(polyline));
     polylinesRef.current = [];
     polylines.forEach(({ points, color }) => drawPolyline(points, color));
-  }, [polylines]);
+  }, [polylines, mapRef, drawPolyline]);
 
   useEffect(() => {
     if(!mapRef.current || !location) return;
@@ -172,7 +175,7 @@ export default function AMapContainer({
     if(indicator && indicatorRef.current) {
       indicatorRef.current.setPosition(location);
     }
-  }, [autoCentered, indicator, location, isMoving]);
+  }, [autoCentered, indicator, location, isMoving, mapRef]);
 
   return <div ref={containerRef} style={{ width, height }}/>;
 }
