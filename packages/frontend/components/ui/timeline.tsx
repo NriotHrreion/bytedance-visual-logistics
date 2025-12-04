@@ -1,19 +1,13 @@
 import { cva, type VariantProps } from "class-variance-authority";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import { cn, formatDate } from "@/lib/utils";
 
-export function Timeline({
-  reverse = false,
-  className,
-  ...props
-}: React.ComponentProps<"div"> & {
-  reverse?: boolean
-}) {
+export function Timeline({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="timeline"
       className={cn(
-        "flex gap-6 border-l-2 border-dashed",
-        reverse ? "flex-col-reverse justify-end" : "flex-col",
+        "flex flex-col gap-6 border-l-2 border-dashed",
         className
       )}
       {...props}/>
@@ -49,6 +43,31 @@ export function TimelineItem({
       data-variant={variant}
       className={timelineItemVariants({ variant, className })}
       {...props}/>
+  );
+}
+
+export function TimelineMore({
+  className,
+  children,
+  expanded = false,
+  ...props
+}: React.ComponentProps<typeof TimelineItemHeader> & {
+  expanded?: boolean
+}) {
+  return (
+    <TimelineItemHeader
+      className={cn(
+        "pl-4 relative text-sm text-muted-foreground cursor-pointer",
+        className
+      )}
+      {...props}>
+      {children}
+      {
+        expanded
+        ? <ChevronUp size={18}/>
+        : <ChevronDown size={18}/>
+      }
+    </TimelineItemHeader>
   );
 }
 

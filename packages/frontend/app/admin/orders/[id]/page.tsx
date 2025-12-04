@@ -2,7 +2,7 @@
 
 import type { GeoLocation } from "shared";
 import dynamic from "next/dynamic";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import { Eye, EyeClosed, MousePointer2 } from "lucide-react";
 import { useDeliveryPaths } from "@/hooks/use-delivery-paths";
@@ -14,7 +14,8 @@ import {
   TimelineItemContent,
   TimelineItemHeader,
   TimelineItemTime,
-  TimelineItemTitle
+  TimelineItemTitle,
+  TimelineMore
 } from "@/components/ui/timeline";
 import { OrderItem } from "@/components/order-item";
 import { RealtimeRouteClient } from "@/lib/ws/realtime-route";
@@ -37,6 +38,7 @@ export default function OrderPage() {
   const [displayedPoint, setDisplayedPoint] = useState<GeoLocation | null>(null);
   const animationTimerRef = useRef<number | null>(null);
   const [receiverVisible, setReceiverVisible] = useState(false);
+  const [timelineExpanded, setTimelineExpanded] = useState(false);
 
   const handleVisibilityChange = useCallback(() => {
     setDisplayedPoint(points[currentPointIndex]);
@@ -191,17 +193,21 @@ export default function OrderPage() {
         </div>
         <div className="flex-1 px-4 pb-4 flex flex-col overflow-hidden">
           <div className="flex-1 overflow-y-auto">
-            <Timeline className="h-fit min-h-full mx-5 py-6 mb-auto" reverse>
-              {paths.map(({ time, location, action }, i) => {
+            <Timeline className="h-fit min-h-full mx-5 py-6 mb-auto">
+              {paths.toReversed().map(({ time, location, action }, i) => {
                 const isLast = i === paths.length - 1;
                 const isDelivering = order.status === "delivering";
                 const isDelivered = order.status === "delivered";
                 const isReceived = order.status === "received";
                 const isCancelled = order.status === "cancelled";
+                const secondary = i + 1 < paths.length && action === paths[i + 1].action;
+                
+                if(secondary && !timelineExpanded) return <React.Fragment key={i}/>;
+                
                 return (
                   <TimelineItem
                     variant={(() => {
-                      if(i + 1 < paths.length && action === paths[i + 1].action) return "secondary";
+                      if(secondary) return "secondary";
                       if(!isLast) return "default";
                       if(isDelivered || isReceived) return "success";
                       if(isCancelled) return "destructive";
@@ -219,6 +225,11 @@ export default function OrderPage() {
                   </TimelineItem>
                 );
               })}
+              <TimelineMore
+                expanded={timelineExpanded}
+                onClick={() => setTimelineExpanded((prev) => !prev)}>
+                {timelineExpanded ? "收起更多物流明细" : "展开更多物流明细"}
+              </TimelineMore>
             </Timeline>
           </div>
           <OrderItem

@@ -1,7 +1,7 @@
 "use client";
 
 import type { GeoLocation } from "shared";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { useParams } from "next/navigation";
 import { MousePointer2 } from "lucide-react";
@@ -11,7 +11,8 @@ import {
   TimelineItemContent,
   TimelineItemHeader,
   TimelineItemTime,
-  TimelineItemTitle
+  TimelineItemTitle,
+  TimelineMore
 } from "@/components/ui/timeline";
 import { GeoLocationLabel } from "@/components/geolocation-label";
 import { OrderItem } from "@/components/order-item";
@@ -36,6 +37,7 @@ export default function OrderPage() {
   const updateIntervalRef = useRef<number | null>(null);
   const [displayedPoint, setDisplayedPoint] = useState<GeoLocation | null>(null);
   const animationTimerRef = useRef<number | null>(null);
+  const [timelineExpanded, setTimelineExpanded] = useState(false);
   const [codeCopied, setCodeCopied] = useState(false);
 
   const handleCopyClaimCode = async () => {
@@ -168,17 +170,21 @@ export default function OrderPage() {
         </Button>
       </div>
       <div className="px-8 max-sm:px-4">
-        <Timeline className="mx-3 py-6" reverse>
-          {paths.map(({ time, location, action, claimCode }, i) => {
+        <Timeline className="mx-3 py-6">
+          {paths.toReversed().map(({ time, location, action, claimCode }, i) => {
             const isLast = i === paths.length - 1;
             const isDelivering = order.status === "delivering";
             const isDelivered = order.status === "delivered";
             const isReceived = order.status === "received";
             const isCancelled = order.status === "cancelled";
+            const secondary = i + 1 < paths.length && action === paths[i + 1].action;
+            
+            if(secondary && !timelineExpanded) return <React.Fragment key={i}/>;
+            
             return (
               <TimelineItem
                 variant={(() => {
-                  if(i + 1 < paths.length && action === paths[i + 1].action) return "secondary";
+                  if(secondary) return "secondary";
                   if(!isLast) return "default";
                   if(isDelivered || isReceived) return "success";
                   if(isCancelled) return "destructive";
@@ -209,6 +215,11 @@ export default function OrderPage() {
               </TimelineItem>
             );
           })}
+          <TimelineMore
+            expanded={timelineExpanded}
+            onClick={() => setTimelineExpanded((prev) => !prev)}>
+            {timelineExpanded ? "收起更多物流明细" : "展开更多物流明细"}
+          </TimelineMore>
         </Timeline>
         <OrderItem
           {...order}
