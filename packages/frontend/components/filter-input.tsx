@@ -106,24 +106,6 @@ export function FilterInput<F extends FiltersType>({
 
   return (
     <div className={cn("flex gap-2", className)}>
-      <InputGroup>
-        <InputGroupAddon>
-          <Package />
-        </InputGroupAddon>
-        {filterTags.length > 0 && (
-          <InputGroupAddon>
-            {filterTags.map((tag, i) => (
-              <Badge variant="outline" key={i}>
-                {tag.name}
-              </Badge>
-            ))}
-          </InputGroupAddon>
-        )}
-        <InputGroupInput
-          value={searchValue}
-          onChange={(e) => setSearchValue(e.target.value)}
-          placeholder={placeholder}/>
-      </InputGroup>
       {defs.map((filter, i) => (
         <DropdownMenu key={i}>
           <DropdownMenuTrigger asChild>
@@ -148,6 +130,24 @@ export function FilterInput<F extends FiltersType>({
           </DropdownMenuContent>
         </DropdownMenu>
       ))}
+      <InputGroup>
+        <InputGroupAddon>
+          <Package />
+        </InputGroupAddon>
+        {filterTags.length > 0 && (
+          <InputGroupAddon>
+            {filterTags.map((tag, i) => (
+              <Badge variant="outline" key={i}>
+                {tag.name}
+              </Badge>
+            ))}
+          </InputGroupAddon>
+        )}
+        <InputGroupInput
+          value={searchValue}
+          onChange={(e) => setSearchValue(e.target.value)}
+          placeholder={placeholder}/>
+      </InputGroup>
     </div>
   );
 }

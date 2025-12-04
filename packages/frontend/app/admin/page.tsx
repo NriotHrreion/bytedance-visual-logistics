@@ -1,7 +1,8 @@
 "use client";
 
 import type { DeliveryStatus } from "shared";
-import { PackagePlus, Store } from "lucide-react";
+import { useState } from "react";
+import { ArrowDownUp, PackagePlus, Store } from "lucide-react";
 import { Header, HeaderTitle } from "@/components/ui/header";
 import {
   FilterInput,
@@ -17,9 +18,28 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { CreateOrderDialog } from "./create-order-dialog";
 import { StoreInfoDialog } from "./store-info-dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu";
 
 interface OrderFilters extends FiltersType {
   status: Set<DeliveryStatus>
+}
+
+enum SortingType {
+  ALPHABETIC = "alphabetic",
+  PRICE = "price",
+  TIME = "time"
+}
+
+enum SortingDirection {
+  ASC = "ascending",
+  DESC = "descending"
 }
 
 const filterDefs: FilterDefs<OrderFilters> = [
@@ -39,6 +59,8 @@ const filterDefs: FilterDefs<OrderFilters> = [
 export default function AdminPage() {
   const { orders, isLoading, mutate } = useOrders();
   const { searchValue, filters, ...filterInput } = useFilterInput(filterDefs);
+  const [sortingType, setSortingType] = useState<SortingType>(SortingType.ALPHABETIC);
+  const [sortingDirection, setSortingDirection] = useState<SortingDirection>(SortingDirection.ASC);
 
   return (
     <div className="px-[20%]">
@@ -50,6 +72,30 @@ export default function AdminPage() {
             searchValue={searchValue}
             filters={filters}
             {...filterInput}/>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline">
+                <ArrowDownUp />
+                排序
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuRadioGroup
+                value={sortingType}
+                onValueChange={(e) => setSortingType(e as SortingType)}>
+                <DropdownMenuRadioItem value={SortingType.ALPHABETIC}>名称</DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value={SortingType.PRICE}>价格</DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value={SortingType.TIME}>创建时间</DropdownMenuRadioItem>
+              </DropdownMenuRadioGroup>
+              <DropdownMenuSeparator />
+              <DropdownMenuRadioGroup
+                value={sortingDirection}
+                onValueChange={(e) => setSortingDirection(e as SortingDirection)}>
+                <DropdownMenuRadioItem value={SortingDirection.ASC}>升序</DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value={SortingDirection.DESC}>降序</DropdownMenuRadioItem>
+              </DropdownMenuRadioGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
           <StoreInfoDialog asChild>
             <Button variant="outline">
               <Store />
@@ -77,6 +123,17 @@ export default function AdminPage() {
           )
           : (
             orders
+              .toSorted((a, b) => {
+                const dir = sortingDirection === SortingDirection.ASC ? 1 : -1;
+                switch(sortingType) {
+                  case SortingType.ALPHABETIC:
+                    return a.name.localeCompare(b.name) * dir;
+                  case SortingType.PRICE:
+                    return (a.price - b.price) * dir;
+                  case SortingType.TIME:
+                    return (a.createdAt - b.createdAt) * dir;
+                }
+              })
               .filter(({ id, name, status }) => (
                 (
                   filters.status.size !== 0
