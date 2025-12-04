@@ -1,6 +1,7 @@
 import type { OrderInfoDTO } from "shared";
 import { useMemo } from "react";
 import Link from "next/link";
+import { toast } from "sonner";
 import { Ellipsis, PackageCheck, PackageX, Trash2, TruckElectric } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -182,9 +183,15 @@ export function OrderItem({
             </Button>
           )}
           {deliverButton && (
-            <Button size="xs" onClick={async () => {
-              await deliver();
-              onChange && onChange();
+            <Button size="xs" onClick={() => {
+              toast.promise(deliver, {
+                loading: "正在规划路线...",
+                success: () => {
+                  onChange && onChange();
+                  return "发货成功";
+                },
+                error: (e) => `发货失败：${e}`
+              });
             }}>
               物流发货
             </Button>
