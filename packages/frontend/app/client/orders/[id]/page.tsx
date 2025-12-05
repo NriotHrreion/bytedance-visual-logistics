@@ -143,6 +143,7 @@ export default function OrderPage() {
         <AMapContainer
           height={450}
           location={displayedPoint ?? points[currentPointIndex]}
+          autoCenteringRange={100}
           polylines={[
             { points, color: "#caeccc" },
             { points: [...points.slice(0, currentPointIndex + 1), displayedPoint], color: "green" }

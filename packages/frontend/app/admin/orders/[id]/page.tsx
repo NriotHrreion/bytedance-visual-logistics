@@ -130,6 +130,7 @@ export default function OrderPage() {
       <div className="flex-2 *:w-full *:h-full relative">
         <AMapContainer
           location={displayedPoint ?? points[currentPointIndex]}
+          autoCenteringRange={200}
           polylines={[
             { points, color: "#caeccc" },
           { points: [...points.slice(0, currentPointIndex + 1), displayedPoint], color: "green" }

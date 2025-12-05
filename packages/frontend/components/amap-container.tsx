@@ -15,7 +15,7 @@ export default function AMapContainer({
   width,
   height,
   location,
-  autoCentered = false,
+  autoCenteringRange,
   zoom = 14,
   markable = false,
   polylines = [],
@@ -28,7 +28,7 @@ export default function AMapContainer({
   width?: number
   height?: number
   location?: GeoLocation
-  autoCentered?: boolean
+  autoCenteringRange?: number
   zoom?: number
   markable?: boolean
   polylines?: PolylineProperties[]
@@ -169,13 +169,25 @@ export default function AMapContainer({
   useEffect(() => {
     if(!mapRef.current || !location) return;
 
-    if(autoCentered && !isMoving) {
-      mapRef.current.setCenter(location);
+    if(autoCenteringRange && !isMoving) {
+      const { x: cx, y: cy } = mapRef.current.lngLatToContainer(location);
+      const { clientWidth: cw, clientHeight: ch } = mapRef.current.getContainer();
+      if(
+        !isMoving
+        && (
+          cx <= autoCenteringRange
+          || cx >= cw - autoCenteringRange
+          || cy <= autoCenteringRange
+          || cy >= ch - autoCenteringRange
+        )
+      ) {
+        mapRef.current.setCenter(location);
+      }
     }
     if(indicator && indicatorRef.current) {
       indicatorRef.current.setPosition(location);
     }
-  }, [autoCentered, indicator, location, isMoving, mapRef]);
+  }, [autoCenteringRange, indicator, location, isMoving, mapRef]);
 
   return <div ref={containerRef} style={{ width, height }}/>;
 }
