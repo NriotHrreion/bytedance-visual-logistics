@@ -28,13 +28,13 @@ const AMapContainer = dynamic(() => import("@/components/amap-container"), { ssr
 
 export default function OrderPage() {
   const { id } = useParams<{ id: string }>();
-  const { order, mutate } = useOrder(id);
+  const { order, isLoading: isOrderLoading, mutate } = useOrder(id);
   const { paths } = useDeliveryPaths(id);
   const wsClient = useMemo(() => new RealtimeRouteClient(id), [id]);
   const mapRef = useRef<AMap.Map | null>(null);
   const [points, setPoints] = useState<GeoLocation[]>([]);
   const [currentPointIndex, setCurrentPointIndex] = useState(0);
-  const updateIntervalRef = useRef<number | null>(null);
+  const updateIntervalRef = useRef<number>(1000);
   const [displayedPoint, setDisplayedPoint] = useState<GeoLocation | null>(null);
   const animationTimerRef = useRef<number | null>(null);
   const [receiverVisible, setReceiverVisible] = useState(false);
@@ -45,14 +45,14 @@ export default function OrderPage() {
   }, [points, currentPointIndex]);
 
   useEffect(() => {
-    wsClient.on("init-route", (route, currentPointIndex, updateInterval) => {
+    wsClient.on("init-route", (route, currentPointIndex) => {
       setPoints(route);
       setDisplayedPoint(route[currentPointIndex]);
-      updateIntervalRef.current = updateInterval;
     });
 
-    wsClient.on("update-route", async (currentPointIndex) => {
+    wsClient.on("update-route", async (currentPointIndex, updateInterval) => {
       setCurrentPointIndex(currentPointIndex);
+      updateIntervalRef.current = updateInterval;
 
       const routePoints = await getCurrentState(setPoints);
       setDisplayedPoint(routePoints[currentPointIndex]);
@@ -64,7 +64,9 @@ export default function OrderPage() {
           nextPoint[0] - currentPoint[0],
           nextPoint[1] - currentPoint[1]
         ) * (180 / Math.PI);
-        document.getElementById("truck-indicator")?.style.setProperty("transform", `rotate(${angle}deg)`);
+        const truckMarker = document.getElementById("truck-indicator");
+        truckMarker?.style.setProperty("transform", `rotate(${angle}deg)`);
+        truckMarker?.style.setProperty("display", "block");
       }
     });
 
@@ -114,6 +116,17 @@ export default function OrderPage() {
     return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
   }, [handleVisibilityChange]);
 
+  if(isOrderLoading || !displayedPoint) {
+    return (
+      <div className="h-screen flex justify-center items-center">
+        <div className="flex flex-col gap-2 text-center">
+          <span className="text-xl font-semibold">加载中</span>
+          <span className="text-sm text-muted-foreground">Loading...</span>
+        </div>
+      </div>
+    );
+  }
+
   if(!order) {
     return (
       <div className="h-screen flex justify-center items-center">
@@ -129,7 +142,7 @@ export default function OrderPage() {
     <div className="flex-1 flex min-h-0">
       <div className="flex-2 *:w-full *:h-full relative">
         <AMapContainer
-          location={displayedPoint ?? points[currentPointIndex]}
+          location={displayedPoint}
           autoCenteringRange={200}
           polylines={[
             { points, color: "#caeccc" },
@@ -142,7 +155,8 @@ export default function OrderPage() {
               height={55.75}
               src={TruckIcon.src}
               alt="truck-indicator"
-              id="truck-indicator"/>
+              id="truck-indicator"
+              style={{ display: "none" }}/>
           }
           indicatorOffset={[-12.875, -27.875]}
           ref={mapRef}/>

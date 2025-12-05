@@ -63,11 +63,15 @@ export class OrdersController extends Controller {
     /** @see https://lbs.amap.com/api/webservice/guide/api/direction#t6 */
     const { data } = await amapRestAPI.get(`/v3/direction/driving?key=${amapServiceKey}&origin=${origin.join(",")}&destination=${destination.join(",")}&extensions=base`);
     const steps = data.route.paths[0].steps;
-    const points: GeoLocation[] = [];
+    const pointsMap = new Map<string, GeoLocation>(); // to deduplicate
     for(const step of steps) {
       const polyline: string = step.polyline;
-      points.push(...polyline.split(";").map((str) => str.split(",").map(parseFloat)) as GeoLocation[]);
+      polyline.split(";").forEach((str) => {
+        const point = str.split(",").map(parseFloat) as GeoLocation;
+        pointsMap.set(str, point);
+      });
     }
+    const points = Array.from(pointsMap.values());
     this.pointsService.storeMockRoute(newOrderId, points);
   }
 
