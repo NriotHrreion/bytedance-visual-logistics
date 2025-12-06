@@ -17,7 +17,7 @@ import {
   TimelineItemTitle,
   TimelineMore
 } from "@/components/ui/timeline";
-import { OrderItem } from "@/components/order-item";
+import { OrderCard } from "@/components/order-card";
 import { RealtimeRouteClient } from "@/lib/ws/realtime-route";
 import { getCurrentState } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -74,7 +74,8 @@ export default function OrderPage() {
   }, [wsClient]);
 
   useEffect(() => {
-    if(currentPointIndex + 1 >= points.length || updateIntervalRef.current === null) return;
+    if(!order || order.status !== "delivering") return;
+    if(currentPointIndex + 2 >= points.length || updateIntervalRef.current === null) return;
 
     const currentPoint = points[currentPointIndex];
     const nextPoint = points[currentPointIndex + 1];
@@ -108,7 +109,7 @@ export default function OrderPage() {
       window.cancelAnimationFrame(animationTimerRef.current);
       animationTimerRef.current = null;
     };
-  }, [points, currentPointIndex]);
+  }, [order, points, currentPointIndex]);
 
   useEffect(() => {
     document.addEventListener("visibilitychange", handleVisibilityChange);
@@ -247,7 +248,7 @@ export default function OrderPage() {
               </TimelineMore>
             </Timeline>
           </div>
-          <OrderItem
+          <OrderCard
             {...order}
             deliverButton={order.status === "pending"}
             cancelButton

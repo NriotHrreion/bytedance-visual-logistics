@@ -3,6 +3,17 @@ import { db } from "@/db";
 import { deserializeGeoLocation, serializeGeoLocation } from "@/utils";
 
 export class PointsService {
+  private static instance: PointsService;
+
+  private constructor() { }
+
+  public static get(): PointsService {
+    if(!PointsService.instance) {
+      PointsService.instance = new PointsService();
+    }
+    return PointsService.instance;
+  }
+
   async storeMockRoute(orderId: string, points: GeoLocation[]) {
     const order = await db.query("select * from orders where id = $1;", [orderId]);
     if(order.rows.length === 0) {

@@ -8,9 +8,24 @@ import {
 } from "@/utils";
 
 export class OrdersService extends EventEmitter<{
-  create: [string],
+  deliver: [string],
+  receive: [string],
+  cancel: [string],
   delete: [string]
 }> {
+  private static instance: OrdersService;
+
+  private constructor() {
+    super();
+  }
+
+  public static get(): OrdersService {
+    if(!OrdersService.instance) {
+      OrdersService.instance = new OrdersService();
+    }
+    return OrdersService.instance;
+  }
+
   private rowToOrder(row: any): Order {
     return {
       id: row.id,
@@ -45,7 +60,6 @@ export class OrdersService extends EventEmitter<{
       "insert into orders (id, name, price, created_at, status, origin, destination, receiver, current, current_point_index) values ($1, $2, $3, to_timestamp($4 / 1000.0), $5, $6, $7, $8, $9, $10);",
       [id, order.name, order.price, Date.now(), "pending", serializeGeoLocation(order.origin), serializeGeoLocation(order.destination), order.receiver, serializeGeoLocation(order.origin), 0]
     );
-    this.emit("create", id);
     return id;
   }
 
@@ -64,6 +78,9 @@ export class OrdersService extends EventEmitter<{
 
   async updateOrderStatus(id: string, status: DeliveryStatus) {
     await db.query("update orders set status = $1 where id = $2;", [status, id]);
+    if(status === "delivering") this.emit("deliver", id);
+    if(status === "received") this.emit("receive", id);
+    if(status === "cancelled") this.emit("cancel", id);
   }
 
   async updateOrderLocation(id: string, location: GeoLocation, currentPointIndex: number) {

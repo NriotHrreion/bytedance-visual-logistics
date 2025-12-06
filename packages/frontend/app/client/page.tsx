@@ -8,7 +8,7 @@ import {
   InputGroupButton,
   InputGroupInput
 } from "@/components/ui/input-group";
-import { OrderItem } from "@/components/order-item";
+import { OrderCard } from "@/components/order-card";
 import { searchStringCompare } from "@/lib/search";
 import { useOrders } from "@/hooks/use-orders";
 import { Spinner } from "@/components/ui/spinner";
@@ -59,7 +59,7 @@ export default function ClientPage() {
                 : true
               ))
               .map((order) => (
-                <OrderItem
+                <OrderCard
                   {...order}
                   detailsHref={`/client/orders/${order.id}`}
                   receiveButton={order.status !== "pending" && order.status !== "received" && order.status !== "cancelled"}

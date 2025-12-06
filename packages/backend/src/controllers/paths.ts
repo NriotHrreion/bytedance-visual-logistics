@@ -4,7 +4,7 @@ import { PathsService } from "@/services/paths";
 
 @Routable
 export class PathsController extends Controller {
-  private pathsService = new PathsService();
+  private pathsService = PathsService.get();
 
   @Get("/:id")
   async getDeliveryPaths(req: Request, res: Response) {

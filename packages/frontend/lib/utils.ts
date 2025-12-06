@@ -1,5 +1,5 @@
 import type { SetState } from "./types";
-import { getSegmentDistance, type GeoLocation } from "shared";
+import { getSegmentDistance, simulatedTruckVelocity, type GeoLocation } from "shared";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -35,8 +35,7 @@ export function getCurrentState<T>(setState: SetState<T>): Promise<T> {
   });
 }
 
-export function estimateEtaDay(origin: GeoLocation, destination: GeoLocation, progress: number): number {
+export function estimateEtaHour(origin: GeoLocation, destination: GeoLocation, progress: number): number {
   const distance = getSegmentDistance(origin, destination);
-  const speed = 1000; // km / day
-  return distance * (1 - progress) / speed;
+  return distance * (1 - progress) / simulatedTruckVelocity;
 }

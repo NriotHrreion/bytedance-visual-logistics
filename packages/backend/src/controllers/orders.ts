@@ -5,13 +5,12 @@ import { Get, Post, Routable, Controller, Delete } from "@/controller";
 import { OrdersService } from "@/services/orders";
 import { PathsService } from "@/services/paths";
 import { PointsService } from "@/services/points";
-import { getRandom } from "@/utils";
 
 @Routable
 export class OrdersController extends Controller {
-  private ordersService = new OrdersService();
-  private pathsService = new PathsService();
-  private pointsService = new PointsService();
+  private ordersService = OrdersService.get();
+  private pathsService = PathsService.get();
+  private pointsService = PointsService.get();
 
   @Get("/")
   async getOrderList(req: Request, res: Response) {

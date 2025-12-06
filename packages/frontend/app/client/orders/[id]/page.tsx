@@ -15,7 +15,7 @@ import {
   TimelineMore
 } from "@/components/ui/timeline";
 import { GeoLocationLabel } from "@/components/geolocation-label";
-import { OrderItem } from "@/components/order-item";
+import { OrderCard } from "@/components/order-card";
 import { copyToClipboard, getCurrentState } from "@/lib/utils";
 import { useOrder } from "@/hooks/use-order";
 import { useDeliveryPaths } from "@/hooks/use-delivery-paths";
@@ -86,7 +86,8 @@ export default function OrderPage() {
   }, [wsClient]);
 
   useEffect(() => {
-    if(currentPointIndex + 1 >= points.length || updateIntervalRef.current === null) return;
+    if(!order || order.status !== "delivering") return;
+    if(currentPointIndex + 2 >= points.length || updateIntervalRef.current === null) return;
 
     const currentPoint = points[currentPointIndex];
     const nextPoint = points[currentPointIndex + 1];
@@ -120,7 +121,7 @@ export default function OrderPage() {
       window.cancelAnimationFrame(animationTimerRef.current);
       animationTimerRef.current = null;
     };
-  }, [points, currentPointIndex, updateIntervalRef]);
+  }, [order, points, currentPointIndex, updateIntervalRef]);
 
   useEffect(() => {
     document.addEventListener("visibilitychange", handleVisibilityChange);
@@ -236,7 +237,7 @@ export default function OrderPage() {
             {timelineExpanded ? "收起更多物流明细" : "展开更多物流明细"}
           </TimelineMore>
         </Timeline>
-        <OrderItem
+        <OrderCard
           {...order}
           receiveButton={order.status !== "pending" && order.status !== "received" && order.status !== "cancelled"}
           onChange={() => mutate()}/>

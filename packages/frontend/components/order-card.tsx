@@ -10,7 +10,7 @@ import { GeoLocationLabel } from "@/components/geolocation-label";
 import { Hint, HintContent } from "./ui/hint";
 import { Price } from "./price";
 import { useOrder } from "@/hooks/use-order";
-import { estimateEtaDay, formatDate } from "@/lib/utils";
+import { estimateEtaHour, formatDate } from "@/lib/utils";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,7 +19,7 @@ import {
   DropdownMenuTrigger
 } from "./ui/dropdown-menu";
 
-interface OrderItemOptions {
+interface OrderCardOptions {
   detailsHref?: string
   deliverButton?: boolean
   receiveButton?: boolean
@@ -30,7 +30,7 @@ interface OrderItemOptions {
   onChange?: () => void
 }
 
-export function OrderItem({
+export function OrderCard({
   id,
   name,
   price,
@@ -50,10 +50,10 @@ export function OrderItem({
   displayCurrentLocation = false,
   displayClaimCode = false,
   onChange
-}: OrderInfoDTO & OrderItemOptions) {
+}: OrderInfoDTO & OrderCardOptions) {
   const { deliver, receive, cancel, delete: del } = useOrder(id);
-  const etaDay = useMemo(
-    () => Math.floor(estimateEtaDay(origin, destination, currentPointIndex / routeLength)),
+  const etaHour = useMemo(
+    () => Math.floor(estimateEtaHour(origin, destination, currentPointIndex / routeLength)),
     [origin, destination, currentPointIndex, routeLength]
   );
 
@@ -122,10 +122,7 @@ export function OrderItem({
       {status === "delivering" && (
         <Hint>
           <TruckElectric size={17}/>
-          {etaDay === 0 && <HintContent>预计今天送达</HintContent>}
-          {etaDay === 1 && <HintContent>预计明天送达</HintContent>}
-          {etaDay === 2 && <HintContent>预计后天送达</HintContent>}
-          {etaDay > 2 && <HintContent>预计 {etaDay} 天后送达</HintContent>}
+          <HintContent>预计 {etaHour} 小时后送达</HintContent>
         </Hint>
       )}
       {(claimCode && displayClaimCode) && (

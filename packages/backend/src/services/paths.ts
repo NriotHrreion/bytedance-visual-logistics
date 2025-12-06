@@ -3,6 +3,17 @@ import { db } from "@/db";
 import { deserializeGeoLocation, serializeGeoLocation } from "@/utils";
 
 export class PathsService {
+  private static instance: PathsService;
+
+  private constructor() { }
+
+  public static get(): PathsService {
+    if(!PathsService.instance) {
+      PathsService.instance = new PathsService();
+    }
+    return PathsService.instance;
+  }
+
   async getPathsByOrderId(orderId: string): Promise<DeliveryPath[] | null> {
     const order = await db.query("select * from orders where id = $1;", [orderId]);
     if(order.rows.length === 0) {

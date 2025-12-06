@@ -12,7 +12,7 @@ import {
 } from "@/components/filter-input";
 import { useOrders } from "@/hooks/use-orders";
 import { Spinner } from "@/components/ui/spinner";
-import { OrderItem } from "@/components/order-item";
+import { OrderCard } from "@/components/order-card";
 import { searchStringCompare } from "@/lib/search";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -147,7 +147,7 @@ export default function AdminPage() {
                 )
               ))
               .map((order) => (
-                <OrderItem
+                <OrderCard
                   {...order}
                   detailsHref={`/admin/orders/${order.id}`}
                   displayCurrentLocation

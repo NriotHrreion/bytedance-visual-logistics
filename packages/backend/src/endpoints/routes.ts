@@ -1,4 +1,4 @@
-import { getSegmentDistance, type GeoLocation } from "shared";
+import { getSegmentDistance, simulatedTruckVelocity, type GeoLocation } from "shared";
 import ws from "ws";
 import { Connectable, Endpoint, OnClose, OnError, OnOpen, type Session } from "@/endpoint";
 import { OrdersService } from "@/services/orders";
@@ -6,13 +6,11 @@ import { PathsService } from "@/services/paths";
 import { PointsService } from "@/services/points";
 import { getRandom } from "@/utils";
 
-const SIMULATED_VELOCITY = 300; // km / h
-
 @Connectable("/routes/:id")
 export class RoutesEndpoint extends Endpoint {
-  private ordersService = new OrdersService();
-  private pathsService = new PathsService();
-  private pointsService = new PointsService();
+  private ordersService = OrdersService.get();
+  private pathsService = PathsService.get();
+  private pointsService = PointsService.get();
 
   private timersMap: Map<string, NodeJS.Timeout> = new Map();
   private sessionsMap: Map<string, Set<Session>> = new Map();
@@ -23,13 +21,19 @@ export class RoutesEndpoint extends Endpoint {
 
     this.setupTimers();
     
-    this.ordersService.on("create", (orderId) => this.createTimer(orderId));
+    this.ordersService.on("deliver", (orderId) => this.createTimer(orderId));
+    this.ordersService.on("receive", (orderId) => this.removeTimer(orderId));
+    this.ordersService.on("cancel", (orderId) => this.removeTimer(orderId));
     this.ordersService.on("delete", (orderId) => this.removeTimer(orderId));
   }
 
   private async setupTimers() {
     const orderIds = (await this.ordersService.getOrders()).map(({ id }) => id);
-    orderIds.forEach((orderId) => this.createTimer(orderId));
+    orderIds.forEach(async (orderId) => {
+      if(await this.ordersService.getOrderStatus(orderId) === "delivering") {
+        this.createTimer(orderId);
+      }
+    });
   }
 
   private createTimer(orderId: string) {
@@ -63,7 +67,7 @@ export class RoutesEndpoint extends Endpoint {
     const next = currentPointIndex + 1;
     const nextPoint = points[next];
 
-    if(next === points.length) {
+    if(next + 1 === points.length) {
       this.ordersService.updateOrderStatus(orderId, "delivered");
       this.pathsService.pushDeliveryPath(orderId, {
         location: points[currentPointIndex],
@@ -84,7 +88,7 @@ export class RoutesEndpoint extends Endpoint {
 
     const nextNextPoint = points[next + 1];
     const distance = getSegmentDistance(nextPoint, nextNextPoint); // km
-    const updateInterval = (distance / SIMULATED_VELOCITY) * 60 * 60 * 1000; // ms
+    const updateInterval = (distance / simulatedTruckVelocity) * 60 * 60 * 1000; // ms
 
     this.sessionsMap.forEach((sessions, id) => {
       if(sessions.size === 0 || id !== orderId) return;
