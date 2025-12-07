@@ -7,21 +7,27 @@ import AMapLoader from "@amap/amap-jsapi-loader";
 const AUTO_CENTER_AFTER_MOVING_MS = 2000;
 
 interface PolylineProperties {
+  readonly key: string
   points: GeoLocation[]
   color: string
+}
+
+interface MarkerProperties {
+  readonly key: string
+  location: GeoLocation
+  content: React.ReactNode
+  offset: [number, number]
 }
 
 export default function AMapContainer({
   width,
   height,
-  location,
+  location = [116.397428, 39.90923], // 北京市
   autoCenteringRange,
   zoom = 14,
   markable = false,
   polylines = [],
-  indicator = false,
-  indicatorContent,
-  indicatorOffset,
+  markers = [],
   onMark,
   ref
 }: {
@@ -32,9 +38,7 @@ export default function AMapContainer({
   zoom?: number
   markable?: boolean
   polylines?: PolylineProperties[]
-  indicator?: boolean
-  indicatorContent?: React.ReactNode
-  indicatorOffset?: [number, number]
+  markers?: MarkerProperties[]
   onMark?: (location: GeoLocation) => void
   ref?: React.RefObject<AMap.Map | null>
 }) {
@@ -43,8 +47,9 @@ export default function AMapContainer({
   const _mapRef = useRef<AMap.Map | null>(null);
   const mapRef = ref ?? _mapRef;
   const markerRef = useRef<AMap.Marker | null>(null);
-  const indicatorRef = useRef<AMap.Marker | null>(null);
-  const polylinesRef = useRef<AMap.Polyline[]>([]);
+  const [isMapLoaded, setMapLoaded] = useState(false);
+  const polylinesRef = useRef<Map<string, AMap.Polyline>>(new Map());
+  const markersRef = useRef<Map<string, AMap.Marker>>(new Map());
   const [isMoving, setMoving] = useState(false);
   const dragEndTimerRef = useRef<NodeJS.Timeout | null>(null);
   const zoomEndTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -71,19 +76,42 @@ export default function AMapContainer({
     mapRef.current.add(markerRef.current);
   };
 
-  const drawPolyline = useCallback((polyline: GeoLocation[], color: string) => {
-    if(!instanceRef.current || !mapRef.current || polyline.length === 0) return;
-    
-    const path = polyline.map((location) => new instanceRef.current.LngLat(location[0], location[1]));
+  const drawPolyline = useCallback((polyline: PolylineProperties) => {
+    if(!instanceRef.current || !mapRef.current || polyline.points.length === 0) return;
+
+    const path = polyline.points.map((location) => new instanceRef.current.LngLat(location[0], location[1]));
+    if(polylinesRef.current.has(polyline.key)) {
+      polylinesRef.current.get(polyline.key)?.setPath(path);
+      return;
+    }
+
     const polylineInstance = new instanceRef.current.Polyline({
       path,
-      strokeColor: color,
+      strokeColor: polyline.color,
       strokeWeight: 4,
       strokeOpacity: 0.8
     });
-    
-    polylinesRef.current.push(polylineInstance);
+
+    polylinesRef.current.set(polyline.key, polylineInstance);
     mapRef.current.add(polylineInstance);
+  }, [mapRef]);
+
+  const drawMarker = useCallback((marker: MarkerProperties) => {
+    if(!instanceRef.current || !mapRef.current) return;
+
+    if(markersRef.current.has(marker.key)) {
+      markersRef.current.get(marker.key)?.setPosition(marker.location);
+      return;
+    }
+    
+    const markerInstance = new instanceRef.current.Marker({
+      position: marker.location,
+      content: renderToStaticMarkup(marker.content),
+      offset: new instanceRef.current.Pixel(...marker.offset),
+    });
+
+    markersRef.current.set(marker.key, markerInstance);
+    mapRef.current.add(markerInstance);
   }, [mapRef]);
 
   const initMap = async () => {
@@ -97,7 +125,7 @@ export default function AMapContainer({
       mapRef.current = new instanceRef.current.Map(containerRef.current, {
         viewMode: "3D",
         zoom,
-        center: location ?? [116.397428, 39.90923], // 北京市
+        center: location,
         mapStyle: "amap://styles/whitesmoke"
       });
 
@@ -126,16 +154,7 @@ export default function AMapContainer({
         });
       }
 
-      polylines.forEach(({ points, color }) => drawPolyline(points, color));
-
-      if(indicator && location) {
-        indicatorRef.current = new instanceRef.current.Marker({
-          position: location,
-          content: renderToStaticMarkup(indicatorContent),
-          offset: new instanceRef.current.Pixel(...indicatorOffset),
-        });
-        mapRef.current.add(indicatorRef.current);
-      }
+      setMapLoaded(true);
     } catch (e) {
       console.log(e);
     }
@@ -161,10 +180,14 @@ export default function AMapContainer({
   useEffect(() => {
     if(!mapRef.current) return;
 
-    polylinesRef.current.forEach((polyline) => mapRef.current.remove(polyline));
-    polylinesRef.current = [];
-    polylines.forEach(({ points, color }) => drawPolyline(points, color));
-  }, [polylines, mapRef, drawPolyline]);
+    polylines.forEach((polyline) => drawPolyline(polyline));
+  }, [polylines, isMapLoaded, mapRef, drawPolyline]);
+
+  useEffect(() => {
+    if(!mapRef.current) return;
+
+    markers.forEach((marker) => drawMarker(marker));
+  }, [markers, isMapLoaded, mapRef, drawMarker]);
 
   useEffect(() => {
     if(!mapRef.current || !location) return;
@@ -184,10 +207,7 @@ export default function AMapContainer({
         mapRef.current.setCenter(location);
       }
     }
-    if(indicator && indicatorRef.current) {
-      indicatorRef.current.setPosition(location);
-    }
-  }, [autoCenteringRange, indicator, location, isMoving, mapRef]);
+  }, [autoCenteringRange, location, isMoving, isMapLoaded, mapRef]);
 
   return <div ref={containerRef} style={{ width, height }}/>;
 }

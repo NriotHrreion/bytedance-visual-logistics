@@ -31,6 +31,20 @@ export type OrderInfoDTO = Order & {
 
 export type OrderSubmissionDTO = Omit<Order, "id" | "status" | "createdAt" | "current">;
 
+export interface StatisticsDTO {
+  orders: {
+    id: string
+    name: string
+    status: DeliveryStatus
+    price: number
+    destination: GeoLocation
+    progress: number
+  }[]
+  totalPrice: number
+  averageDistance: number
+  averageTravelledTime: number
+}
+
 export type APIResponse<T> = T & {
   code: number
   error: string

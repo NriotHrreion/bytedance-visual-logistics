@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 import "@/env-config";
-import { amapServiceKey, amapRestAPI, GeoLocation, type OrderInfoDTO, type OrderSubmissionDTO } from "shared";
+import { amapServiceKey, amapRestAPI, GeoLocation, type OrderInfoDTO, type OrderSubmissionDTO, getSegmentDistance } from "shared";
 import { Get, Post, Routable, Controller, Delete } from "@/controller";
 import { OrdersService } from "@/services/orders";
 import { PathsService } from "@/services/paths";
@@ -44,7 +44,7 @@ export class OrdersController extends Controller {
         ...order,
         claimCode: paths[paths.length - 1]?.claimCode,
         routeLength: await this.pointsService.getRouteLength(order.id)
-      } as OrderInfoDTO
+      } satisfies OrderInfoDTO
     });
   }
 

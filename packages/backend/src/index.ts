@@ -5,6 +5,7 @@ import cors from "cors";
 import ws from "ws";
 import { OrdersController } from "./controllers/orders";
 import { PathsController } from "./controllers/paths";
+import { StatisticsController } from "./controllers/statistics";
 import { RoutesEndpoint } from "./endpoints/routes";
 import "./env-config";
 
@@ -24,6 +25,7 @@ app.use((req, res, next) => {
 // Controllers
 app.use("/v1/orders", new OrdersController().router);
 app.use("/v1/paths", new PathsController().router);
+app.use("/v1/statistics", new StatisticsController().router);
 
 // Endpoints
 new RoutesEndpoint(wss);

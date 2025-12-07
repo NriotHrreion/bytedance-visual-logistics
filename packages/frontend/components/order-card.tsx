@@ -4,7 +4,6 @@ import Link from "next/link";
 import { toast } from "sonner";
 import { Ellipsis, PackageCheck, PackageX, Trash2, TruckElectric } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { GeoLocationLabel } from "@/components/geolocation-label";
 import { Hint, HintContent } from "./ui/hint";
@@ -18,6 +17,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger
 } from "./ui/dropdown-menu";
+import { StatusBadge } from "./status-badge";
 
 interface OrderCardOptions {
   detailsHref?: string
@@ -86,33 +86,7 @@ export function OrderCard({
           </span>
         </div>
         <div className="w-fit flex flex-col justify-between items-end">
-          {status === "pending" && (
-            <Badge variant="outline">待发货</Badge>
-          )}
-          {status === "delivering" && (
-            <Badge variant="outline">
-              <div className="w-2 h-2 rounded-full bg-yellow-600"/>
-              配送中
-            </Badge>
-          )}
-          {status === "delivered" && (
-            <Badge variant="outline">
-              <div className="w-2 h-2 rounded-full bg-green-600"/>
-              待取件
-            </Badge>
-          )}
-          {status === "received" && (
-            <Badge variant="outline">
-              <div className="w-2 h-2 rounded-full bg-green-600"/>
-              已签收
-            </Badge>
-          )}
-          {status === "cancelled" && (
-            <Badge variant="outline">
-              <div className="w-2 h-2 rounded-full bg-red-700"/>
-              已取消
-            </Badge>
-          )}
+          <StatusBadge status={status}/>
           <div className="pr-1">
             <span className="mr-1 text-xs">实付款</span>
             <Price price={price} className="inline-block"/>

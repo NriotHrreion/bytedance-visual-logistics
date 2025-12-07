@@ -1,6 +1,6 @@
 "use client";
 
-import type { DeliveryStatus } from "shared";
+import { getDeliveryStatusPriority, type DeliveryStatus } from "shared";
 import { useState } from "react";
 import { ArrowDownUp, PackagePlus, Store } from "lucide-react";
 import { Header, HeaderTitle } from "@/components/ui/header";
@@ -34,7 +34,8 @@ interface OrderFilters extends FiltersType {
 enum SortingType {
   ALPHABETIC = "alphabetic",
   PRICE = "price",
-  TIME = "time"
+  TIME = "time",
+  STATUS = "status"
 }
 
 enum SortingDirection {
@@ -86,6 +87,7 @@ export default function AdminPage() {
                 <DropdownMenuRadioItem value={SortingType.ALPHABETIC}>名称</DropdownMenuRadioItem>
                 <DropdownMenuRadioItem value={SortingType.PRICE}>价格</DropdownMenuRadioItem>
                 <DropdownMenuRadioItem value={SortingType.TIME}>创建时间</DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value={SortingType.STATUS}>订单状态</DropdownMenuRadioItem>
               </DropdownMenuRadioGroup>
               <DropdownMenuSeparator />
               <DropdownMenuRadioGroup
@@ -132,6 +134,8 @@ export default function AdminPage() {
                     return (a.price - b.price) * dir;
                   case SortingType.TIME:
                     return (a.createdAt - b.createdAt) * dir;
+                  case SortingType.STATUS:
+                    return (getDeliveryStatusPriority(a.status) - getDeliveryStatusPriority(b.status)) * dir;
                 }
               })
               .filter(({ id, name, status }) => (

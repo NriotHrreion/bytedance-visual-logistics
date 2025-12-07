@@ -146,20 +146,25 @@ export default function OrderPage() {
           location={displayedPoint}
           autoCenteringRange={200}
           polylines={[
-            { points, color: "#caeccc" },
-          { points: [...points.slice(0, currentPointIndex + 1), displayedPoint], color: "green" }
+            { key: "route", points, color: "#caeccc" },
+            { key: "travelled-route", points: [...points.slice(0, currentPointIndex + 1), displayedPoint], color: "green" }
           ]}
-          indicator
-          indicatorContent={
-            <img
-              width={25.75}
-              height={55.75}
-              src={TruckIcon.src}
-              alt="truck-indicator"
-              id="truck-indicator"
-              style={{ display: "none" }}/>
-          }
-          indicatorOffset={[-12.875, -27.875]}
+          markers={[
+            {
+              key: "truck-indicator",
+              location: displayedPoint,
+              content: (
+                <img
+                  width={25.75}
+                  height={55.75}
+                  src={TruckIcon.src}
+                  alt="truck-indicator"
+                  id="truck-indicator"
+                  style={{ display: "none" }}/>
+              ),
+              offset: [-12.875, -27.875]
+            }
+          ]}
           ref={mapRef}/>
         <Button
           variant="outline"

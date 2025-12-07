@@ -14,7 +14,7 @@ export default function AdminLayout({
 }) {
   return (
     <main className="h-screen flex flex-col">
-      <NavigationMenu className="max-w-full w-full flex-none px-[15%] py-2 border-b justify-between *:list-none [&_a]:rounded-sm">
+      <NavigationMenu className="max-w-full w-full flex-none px-8 py-2 border-b justify-between *:list-none [&_a]:rounded-sm">
         <div className="flex items-center gap-4">
           <Truck size={18}/>
           <h1 className="font-semibold">物流可视化管理端</h1>

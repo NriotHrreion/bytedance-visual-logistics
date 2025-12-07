@@ -30,6 +30,7 @@ const eslintConfig = defineConfig([
       "import/first": "error",
       "import/no-duplicates": "error",
       "import/no-named-as-default": "off",
+      "react-hooks/set-state-in-effect": "off",
     }
   }
 ]);

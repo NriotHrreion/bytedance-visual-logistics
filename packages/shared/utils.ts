@@ -1,4 +1,4 @@
-import type { GeoLocation } from "./types";
+import type { DeliveryStatus, GeoLocation } from "./types";
 
 /** @returns km */
 export function getSegmentDistance(from: GeoLocation, to: GeoLocation): number {
@@ -13,4 +13,14 @@ export function getSegmentDistance(from: GeoLocation, to: GeoLocation): number {
   const lonDistance = lonDiff * 111 * Math.cos(avgLat * Math.PI / 180);
 
   return Math.sqrt(latDistance ** 2 + lonDistance ** 2);
+}
+
+export function getDeliveryStatusPriority(status: DeliveryStatus): number {
+  switch(status) {
+    case "pending": return 1;
+    case "delivering": return 2;
+    case "delivered": return 3;
+    case "received": return 4;
+    case "cancelled": return 5;
+  }
 }
