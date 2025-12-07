@@ -17,6 +17,7 @@ interface MarkerProperties {
   location: GeoLocation
   content: React.ReactNode
   offset: [number, number]
+  hidden?: boolean
 }
 
 export default function AMapContainer({
@@ -46,7 +47,7 @@ export default function AMapContainer({
   const instanceRef = useRef<typeof AMap | null>(null);
   const _mapRef = useRef<AMap.Map | null>(null);
   const mapRef = ref ?? _mapRef;
-  const markerRef = useRef<AMap.Marker | null>(null);
+  const markerInputRef = useRef<AMap.Marker | null>(null);
   const [isMapLoaded, setMapLoaded] = useState(false);
   const polylinesRef = useRef<Map<string, AMap.Polyline>>(new Map());
   const markersRef = useRef<Map<string, AMap.Marker>>(new Map());
@@ -57,12 +58,12 @@ export default function AMapContainer({
   const putMarker = (at: GeoLocation) => {
     if(!instanceRef.current || !mapRef.current) return;
 
-    if(markerRef.current) {
-      markerRef.current.setPosition(at);
+    if(markerInputRef.current) {
+      markerInputRef.current.setPosition(at);
       return;
     }
 
-    markerRef.current = new instanceRef.current.Marker({
+    markerInputRef.current = new instanceRef.current.Marker({
       position: at,
       content: renderToStaticMarkup(
         <img
@@ -73,7 +74,7 @@ export default function AMapContainer({
       ),
       offset: new instanceRef.current.Pixel(-13, -30),
     });
-    mapRef.current.add(markerRef.current);
+    mapRef.current.add(markerInputRef.current);
   };
 
   const drawPolyline = useCallback((polyline: PolylineProperties) => {
@@ -100,7 +101,8 @@ export default function AMapContainer({
     if(!instanceRef.current || !mapRef.current) return;
 
     if(markersRef.current.has(marker.key)) {
-      markersRef.current.get(marker.key)?.setPosition(marker.location);
+      markersRef.current.get(marker.key).getContentDom().hidden = marker.hidden || false;
+      markersRef.current.get(marker.key).setPosition(marker.location);
       return;
     }
     
@@ -109,6 +111,7 @@ export default function AMapContainer({
       content: renderToStaticMarkup(marker.content),
       offset: new instanceRef.current.Pixel(...marker.offset),
     });
+    markerInstance.getContentDom().hidden = marker.hidden || false;
 
     markersRef.current.set(marker.key, markerInstance);
     mapRef.current.add(markerInstance);

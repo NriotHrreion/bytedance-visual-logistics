@@ -53,7 +53,7 @@ export function OrderCard({
 }: OrderInfoDTO & OrderCardOptions) {
   const { deliver, receive, cancel, delete: del } = useOrder(id);
   const etaHour = useMemo(
-    () => Math.floor(estimateEtaHour(origin, destination, currentPointIndex / routeLength)),
+    () => estimateEtaHour(origin, destination, currentPointIndex / routeLength).toFixed(1),
     [origin, destination, currentPointIndex, routeLength]
   );
 

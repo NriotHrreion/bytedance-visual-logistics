@@ -118,15 +118,3 @@
     @apply bg-background text-foreground;
   }
 }
-
-@layer components {
-  .v-zigzag {
-    /* Vertical */
-    background: linear-gradient(45deg, var(--color-yellow-100) 5px, transparent 0) 0 5px,
-                linear-gradient(135deg, var(--color-yellow-100) 5px, #fff 0) 0 5px;
-    background-color: var(--color-yellow-100);
-    background-position: right top;
-    background-repeat: repeat-y;
-    background-size: 10px 10px;
-  }
-}

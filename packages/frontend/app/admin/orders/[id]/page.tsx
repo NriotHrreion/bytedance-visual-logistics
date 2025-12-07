@@ -4,7 +4,7 @@ import type { GeoLocation } from "shared";
 import dynamic from "next/dynamic";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "next/navigation";
-import { Eye, EyeClosed, MousePointer2 } from "lucide-react";
+import { Check, Eye, EyeClosed, MousePointer2 } from "lucide-react";
 import { useDeliveryPaths } from "@/hooks/use-delivery-paths";
 import { useOrder } from "@/hooks/use-order";
 import { GeoLocationLabel } from "@/components/geolocation-label";
@@ -19,8 +19,9 @@ import {
 } from "@/components/ui/timeline";
 import { OrderCard } from "@/components/order-card";
 import { RealtimeRouteClient } from "@/lib/ws/realtime-route";
-import { getCurrentState } from "@/lib/utils";
+import { estimateEtaHour, getCurrentState } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { MapLabel } from "@/components/map-label";
 
 import TruckIcon from "@/assets/truck.png";
 
@@ -34,11 +35,19 @@ export default function OrderPage() {
   const mapRef = useRef<AMap.Map | null>(null);
   const [points, setPoints] = useState<GeoLocation[]>([]);
   const [currentPointIndex, setCurrentPointIndex] = useState(0);
-  const updateIntervalRef = useRef<number>(1000);
+  const updateIntervalRef = useRef<number>(1);
   const [displayedPoint, setDisplayedPoint] = useState<GeoLocation | null>(null);
   const animationTimerRef = useRef<number | null>(null);
   const [receiverVisible, setReceiverVisible] = useState(false);
   const [timelineExpanded, setTimelineExpanded] = useState(false);
+  const etaHour = useMemo(
+    () => (
+      order && points.length > 0
+      ? estimateEtaHour(order.origin, order.destination, order.currentPointIndex / points.length).toFixed(1)
+      : "0"
+    ),
+    [order, points]
+  );
 
   const handleVisibilityChange = useCallback(() => {
     setDisplayedPoint(points[currentPointIndex]);
@@ -163,6 +172,44 @@ export default function OrderPage() {
                   style={{ display: "none" }}/>
               ),
               offset: [-12.875, -27.875]
+            },
+            {
+              key: "origin",
+              location: order.origin,
+              content: <div className="w-3 h-3 rounded-full border-2 border-green-700 bg-green-50"/>,
+              offset: [0, 0]
+            },
+            {
+              key: "origin-label",
+              location: order.origin,
+              content: (
+                order.status === "pending"
+                ? <MapLabel>订单尚未发货</MapLabel>
+                : (
+                  <MapLabel>
+                    <Check size={19} stroke="var(--color-green-700)"/>
+                    订单已发货
+                  </MapLabel>
+                )
+              ),
+              offset: [0, 15]
+            },
+            {
+              key: "destination",
+              location: order.destination,
+              content: <div className="w-3 h-3 rounded-full border-2 border-green-700 bg-green-50"/>,
+              offset: [0, 0]
+            },
+            {
+              key: "destination-label",
+              location: order.destination,
+              content: (
+                <MapLabel>
+                  预计 {etaHour} 小时后送达
+                </MapLabel>
+              ),
+              offset: [0, 15],
+              hidden: order.status !== "delivering"
             }
           ]}
           ref={mapRef}/>
