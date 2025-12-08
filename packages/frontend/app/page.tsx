@@ -22,7 +22,7 @@ export default function Page() {
           <Button
             variant="outline"
             asChild>
-            <Link href="/client">
+            <Link href="/client/orders">
               <UserRound />
               客户
             </Link>
