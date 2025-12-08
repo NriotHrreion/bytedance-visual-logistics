@@ -263,7 +263,7 @@ export default function OrderPage() {
           <div className="flex-1 overflow-y-auto">
             <Timeline className="h-fit min-h-full mx-5 py-6 mb-auto">
               {paths.toReversed().map(({ time, location, action }, i) => {
-                const isLast = i === paths.length - 1;
+                const isLatest = i === 0;
                 const isDelivering = order.status === "delivering";
                 const isDelivered = order.status === "delivered";
                 const isReceived = order.status === "received";
@@ -276,7 +276,7 @@ export default function OrderPage() {
                   <TimelineItem
                     variant={(() => {
                       if(secondary) return "secondary";
-                      if(!isLast) return "default";
+                      if(!isLatest) return "default";
                       if(isDelivered || isReceived) return "success";
                       if(isCancelled) return "destructive";
                     })()}
@@ -287,7 +287,7 @@ export default function OrderPage() {
                     </TimelineItemHeader>
                     <TimelineItemContent>
                       <GeoLocationLabel location={
-                        (isLast && isDelivering) ? order.current : location
+                        (isLatest && isDelivering) ? order.current : location
                       }/>
                     </TimelineItemContent>
                   </TimelineItem>

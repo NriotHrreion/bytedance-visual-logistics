@@ -240,7 +240,7 @@ export default function OrderPage() {
       <div className="px-8 max-sm:px-4">
         <Timeline className="mx-3 py-6">
           {paths.toReversed().map(({ time, location, action, claimCode }, i) => {
-            const isLast = i === paths.length - 1;
+            const isLatest = i === 0;
             const isDelivering = order.status === "delivering";
             const isDelivered = order.status === "delivered";
             const isReceived = order.status === "received";
@@ -253,7 +253,7 @@ export default function OrderPage() {
               <TimelineItem
                 variant={(() => {
                   if(secondary) return "secondary";
-                  if(!isLast) return "default";
+                  if(!isLatest) return "default";
                   if(isDelivered || isReceived) return "success";
                   if(isCancelled) return "destructive";
                 })()}
@@ -264,9 +264,9 @@ export default function OrderPage() {
                 </TimelineItemHeader>
                 <TimelineItemContent>
                   <GeoLocationLabel location={
-                    (isLast && isDelivering) ? order.current : location
+                    (isLatest && isDelivering) ? order.current : location
                   }/>
-                  {(isLast && claimCode) && (
+                  {(isLatest && claimCode) && (
                     <div className="mt-1 px-3 py-2 border bg-muted rounded-md flex flex-col gap-1">
                       <span className="text-2xl text-foreground font-semibold">{claimCode}</span>
                       <div className="flex justify-between">
