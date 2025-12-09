@@ -181,7 +181,8 @@ export default function OrderPage() {
                   height={55.75}
                   src={TruckIcon.src}
                   alt="truck-indicator"
-                  id="truck-indicator"/>
+                  id="truck-indicator"
+                  style={{ display: "none" }}/>
               ),
               offset: [-12.875, -27.875]
             },
