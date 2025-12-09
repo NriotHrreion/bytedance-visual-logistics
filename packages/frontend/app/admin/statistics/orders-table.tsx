@@ -1,7 +1,7 @@
 "use client";
 "use no memo";
 
-import type { DeliveryStatus } from "shared";
+import { getDeliveryStatusPriority, type DeliveryStatus } from "shared";
 import Link from "next/link";
 import { useState } from "react";
 import { ArrowUpDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
@@ -65,14 +65,26 @@ const columns: ColumnDef<OrdersTableDef>[] = [
   },
   {
     accessorKey: "status",
-    header: () => <div className="w-52 text-center">状态</div>,
+    header: ({ column }) => (
+      <Button
+        variant="ghost"
+        size="sm"
+        className="w-full text-center"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
+        状态
+        <ArrowUpDown />
+      </Button>
+    ),
     cell: ({ row }) => {
       const { status } = row.original;
       return (
-        <div className="w-52 text-center">
+        <div className="w-full text-center">
           <StatusBadge status={status}/>
         </div>
       );
+    },
+    sortingFn: (a, b) => {
+      return getDeliveryStatusPriority(a.original.status) - getDeliveryStatusPriority(b.original.status);
     }
   },
   {
@@ -100,7 +112,7 @@ const columns: ColumnDef<OrdersTableDef>[] = [
 export function OrdersTable({ data }: {
   data: OrdersTableDef[]
 }) {
-  const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 });
+  const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 5 });
   const [sorting, setSorting] = useState([]);
   /** @see https://github.com/TanStack/table/issues/5567 */
   /** @see https://github.com/TanStack/table/issues/6018 */
