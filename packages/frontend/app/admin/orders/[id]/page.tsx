@@ -192,7 +192,8 @@ export default function OrderPage() {
                   </MapLabel>
                 )
               ),
-              offset: [0, 15]
+              offset: [0, 15],
+              dynamic: true
             },
             {
               key: "destination",
@@ -209,7 +210,8 @@ export default function OrderPage() {
                 </MapLabel>
               ),
               offset: [0, 15],
-              hidden: order.status !== "delivering"
+              hidden: order.status !== "delivering",
+              dynamic: true
             }
           ]}
           ref={mapRef}/>

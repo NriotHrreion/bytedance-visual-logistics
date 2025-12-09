@@ -181,8 +181,7 @@ export default function OrderPage() {
                   height={55.75}
                   src={TruckIcon.src}
                   alt="truck-indicator"
-                  id="truck-indicator"
-                  style={{ display: "none" }}/>
+                  id="truck-indicator"/>
               ),
               offset: [-12.875, -27.875]
             },
@@ -205,7 +204,8 @@ export default function OrderPage() {
                   </MapLabel>
                 )
               ),
-              offset: [0, 15]
+              offset: [0, 15],
+              dynamic: true
             },
             {
               key: "destination",
@@ -222,7 +222,8 @@ export default function OrderPage() {
                 </MapLabel>
               ),
               offset: [0, 15],
-              hidden: order.status !== "delivering"
+              hidden: order.status !== "delivering",
+              dynamic: true
             }
           ]}
           ref={mapRef}/>

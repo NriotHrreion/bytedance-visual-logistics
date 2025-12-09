@@ -15,9 +15,10 @@ interface PolylineProperties {
 interface MarkerProperties {
   readonly key: string
   location: GeoLocation
-  content: React.ReactNode
+  content: React.ReactElement
   offset: [number, number]
   hidden?: boolean
+  dynamic?: boolean
 }
 
 export default function AMapContainer({
@@ -55,7 +56,7 @@ export default function AMapContainer({
   const dragEndTimerRef = useRef<NodeJS.Timeout | null>(null);
   const zoomEndTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  const putMarker = (at: GeoLocation) => {
+  const handleMarkerInput = (at: GeoLocation) => {
     if(!instanceRef.current || !mapRef.current) return;
 
     if(markerInputRef.current) {
@@ -101,6 +102,9 @@ export default function AMapContainer({
     if(!instanceRef.current || !mapRef.current) return;
 
     if(markersRef.current.has(marker.key)) {
+      if(marker.dynamic) {
+        markersRef.current.get(marker.key).setContent(renderToStaticMarkup(marker.content));
+      }
       markersRef.current.get(marker.key).getContentDom().hidden = marker.hidden || false;
       markersRef.current.get(marker.key).setPosition(marker.location);
       return;
@@ -148,12 +152,12 @@ export default function AMapContainer({
       });
 
       if(markable) {
-        if(location) putMarker(location);
+        if(location) handleMarkerInput(location);
 
         mapRef.current.on("click", (e) => {
           const markedLocation: GeoLocation = [e.lnglat.lng, e.lnglat.lat];
           onMark && onMark(markedLocation);
-          putMarker(markedLocation);
+         handleMarkerInput(markedLocation);
         });
       }
 
