@@ -13,6 +13,7 @@ import { searchStringCompare } from "@/lib/search";
 import { useOrders } from "@/hooks/use-orders";
 import { Spinner } from "@/components/ui/spinner";
 import { Header, HeaderTitle } from "@/components/ui/header";
+import { getDeliveryStatusPriority } from "shared";
 
 export default function ClientPage() {
   const { orders, isLoading, mutate } = useOrders();
@@ -53,6 +54,7 @@ export default function ClientPage() {
           )
           : (
             orders
+              .toSorted((a, b) => getDeliveryStatusPriority(a.status) - getDeliveryStatusPriority(b.status))
               .filter(({ id, name }) => (
                 searchValue !== ""
                 ? (id.includes(searchValue) || searchStringCompare(name, searchValue))
